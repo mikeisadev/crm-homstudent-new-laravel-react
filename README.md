@@ -33,7 +33,7 @@ You can find API documentation inside:
 - "documentation/API_DOCUMENTATION.md"
 
 And some steps about the development of this CRM sections here:
-- Calendar page development "documentation/CALENDAR_DEVELOPMENT.md"
-- Calendar page improvements "documentation/CALENDAR_IMPROVEMENTS.md"
+- Calendar page development "documentation/calendar/CALENDAR_DEVELOPMENT.md"
+- Calendar page improvements "documentation/calendar/CALENDAR_IMPROVEMENTS.md"
 
 Enter those documentation to understand this project and how we're gone so far.
