@@ -18,7 +18,7 @@ This file is also used to maintain a certain level during the development. This 
 - If I give you an external path with a resource to analyze it, go get it and analyze that resource! Same thing for the resources that I indicate you to analyze inside the folder of this project.
 - I'll guide you and tell what to do.
 - You can give me suggestions to improve the codebase, database, architecture and other improvable aspects.
-- If needed, analyze all the codebase of this project "crm-homstudent-new" to have a wider understand and context.
+- If needed, analyze all the codebase of this project "crm-homstudent-new" to have a wider understanding and context.
 - Code must be clean, readable, maintainable and modular.
 - We have to act like a senior developer. The code must be production ready.
 - Is important that the code is clean, readable, maintainable and modular. I'll have to supervise it in simplicity and I must read it without headaches. Then it has to be modular because I'll have to expand the code, add features and debug them in simplicity.
