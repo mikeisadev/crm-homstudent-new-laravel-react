@@ -70,12 +70,13 @@ export default function ClientRelatedData({ client, loading = false }) {
     const fetchRelatedData = async () => {
         setIsLoadingData(true);
         try {
-            // Fetch all related data in parallel
+            // Fetch contracts and proposals in parallel
             const [contractsRes, proposalsRes] = await Promise.all([
-                api.get(`/clients/${client.id}/contracts`).catch(() => ({ data: { success: false, data: [] } })),
-                api.get(`/clients/${client.id}/proposals`).catch(() => ({ data: { success: false, data: [] } })),
+                api.get(`/clients/${client.id}/contracts`),
+                api.get(`/clients/${client.id}/proposals`),
             ]);
 
+            // Extract data from API response (using success wrapper)
             setContracts(contractsRes.data.success ? contractsRes.data.data : []);
             setProposals(proposalsRes.data.success ? proposalsRes.data.data : []);
 
@@ -374,39 +375,64 @@ export default function ClientRelatedData({ client, loading = false }) {
 
         return (
             <div className="divide-y divide-gray-200">
-                {contracts.map((contract) => (
-                    <div
-                        key={contract.id}
-                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-                    >
-                        <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                                <div className="font-medium text-gray-900">
-                                    Contratto #{contract.contract_number || contract.id}
+                {contracts.map((contract) => {
+                    // Determine property name based on property_type
+                    let propertyName = 'Immobile non specificato';
+                    if (contract.property_type === 'condominium' && contract.condominium) {
+                        propertyName = contract.condominium.name || 'Condominio';
+                    } else if (contract.property_type === 'property' && contract.property) {
+                        propertyName = contract.property.name || contract.property.address || 'Proprietà';
+                    } else if (contract.property_type === 'room' && contract.room) {
+                        propertyName = `Camera ${contract.room.room_number || contract.room.id}`;
+                    }
+
+                    return (
+                        <div
+                            key={contract.id}
+                            className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                        >
+                            <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                    <div className="font-medium text-gray-900">
+                                        Contratto #{contract.contract_number || contract.id}
+                                    </div>
+                                    <div className="text-sm text-gray-600 mt-1">
+                                        {propertyName}
+                                    </div>
+                                    {contract.monthly_rent && (
+                                        <div className="text-sm text-gray-500 mt-1">
+                                            Canone: €{parseFloat(contract.monthly_rent).toFixed(2)}/mese
+                                        </div>
+                                    )}
+                                    <div className="text-sm text-blue-600 mt-1">
+                                        {contract.start_date && `Dal ${formatDate(contract.start_date)}`}
+                                        {contract.end_date && ` al ${formatDate(contract.end_date)}`}
+                                    </div>
                                 </div>
-                                <div className="text-sm text-gray-500 mt-1">
-                                    {contract.property_type || 'Tipo immobile non specificato'}
+                                <div className="ml-4 flex flex-col items-end gap-2">
+                                    <span
+                                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                            contract.status === 'active'
+                                                ? 'bg-green-100 text-green-800'
+                                                : contract.status === 'ended'
+                                                  ? 'bg-red-100 text-red-800'
+                                                  : contract.status === 'pending'
+                                                    ? 'bg-yellow-100 text-yellow-800'
+                                                    : 'bg-gray-100 text-gray-800'
+                                        }`}
+                                    >
+                                        {contract.status || 'draft'}
+                                    </span>
+                                    {contract.contract_type && (
+                                        <span className="text-xs text-gray-500">
+                                            {contract.contract_type}
+                                        </span>
+                                    )}
                                 </div>
-                                <div className="text-sm text-blue-500 mt-1">
-                                    Inizio: {formatDate(contract.start_date)}
-                                </div>
-                            </div>
-                            <div className="ml-4">
-                                <span
-                                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                        contract.status === 'active'
-                                            ? 'bg-green-100 text-green-800'
-                                            : contract.status === 'ended'
-                                              ? 'bg-red-100 text-red-800'
-                                              : 'bg-gray-100 text-gray-800'
-                                    }`}
-                                >
-                                    {contract.status || 'draft'}
-                                </span>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         );
     };
@@ -429,39 +455,68 @@ export default function ClientRelatedData({ client, loading = false }) {
 
         return (
             <div className="divide-y divide-gray-200">
-                {proposals.map((proposal) => (
-                    <div
-                        key={proposal.id}
-                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-                    >
-                        <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                                <div className="font-medium text-gray-900">
-                                    Proposta #{proposal.proposal_number || proposal.id}
+                {proposals.map((proposal) => {
+                    // Determine property name based on property_type
+                    let propertyName = 'Immobile non specificato';
+                    if (proposal.property_type === 'property' && proposal.property) {
+                        propertyName = proposal.property.name || proposal.property.address || 'Proprietà';
+                    } else if (proposal.property_type === 'room' && proposal.room) {
+                        propertyName = `Camera ${proposal.room.room_number || proposal.room.id}`;
+                    }
+
+                    return (
+                        <div
+                            key={proposal.id}
+                            className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                        >
+                            <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                    <div className="font-medium text-gray-900">
+                                        Proposta #{proposal.proposal_number || proposal.id}
+                                    </div>
+                                    <div className="text-sm text-gray-600 mt-1">
+                                        {propertyName}
+                                    </div>
+                                    {proposal.monthly_rent && (
+                                        <div className="text-sm text-gray-500 mt-1">
+                                            Canone proposto: €{parseFloat(proposal.monthly_rent).toFixed(2)}/mese
+                                        </div>
+                                    )}
+                                    {proposal.proposed_start_date && (
+                                        <div className="text-sm text-blue-600 mt-1">
+                                            Inizio previsto: {formatDate(proposal.proposed_start_date)}
+                                        </div>
+                                    )}
+                                    {proposal.notes && (
+                                        <div className="text-sm text-gray-500 mt-2 line-clamp-2">
+                                            {proposal.notes}
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="text-sm text-gray-500 mt-1">
-                                    {proposal.notes || 'Nessuna nota'}
+                                <div className="ml-4 flex flex-col items-end gap-2">
+                                    <span
+                                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                            proposal.status === 'accepted'
+                                                ? 'bg-green-100 text-green-800'
+                                                : proposal.status === 'rejected'
+                                                  ? 'bg-red-100 text-red-800'
+                                                  : proposal.status === 'pending'
+                                                    ? 'bg-yellow-100 text-yellow-800'
+                                                    : 'bg-gray-100 text-gray-800'
+                                        }`}
+                                    >
+                                        {proposal.status || 'draft'}
+                                    </span>
+                                    {proposal.proposal_type && (
+                                        <span className="text-xs text-gray-500">
+                                            {proposal.proposal_type}
+                                        </span>
+                                    )}
                                 </div>
-                                <div className="text-sm text-blue-500 mt-1">
-                                    Data: {formatDate(proposal.created_at)}
-                                </div>
-                            </div>
-                            <div className="ml-4">
-                                <span
-                                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                        proposal.status === 'accepted'
-                                            ? 'bg-green-100 text-green-800'
-                                            : proposal.status === 'rejected'
-                                              ? 'bg-red-100 text-red-800'
-                                              : 'bg-yellow-100 text-yellow-800'
-                                    }`}
-                                >
-                                    {proposal.status || 'draft'}
-                                </span>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         );
     };

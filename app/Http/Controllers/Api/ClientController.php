@@ -316,4 +316,46 @@ class ClientController extends Controller
             return $this->error('Errore nell\'eliminazione del cliente: ' . $e->getMessage(), 500);
         }
     }
+
+    /**
+     * Get all contracts for a specific client
+     *
+     * @param Client $client
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function contracts(Client $client)
+    {
+        try {
+            $contracts = $client->contracts()
+                ->with(['property', 'room', 'condominium', 'secondaryClient'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return $this->success($contracts);
+
+        } catch (\Exception $e) {
+            return $this->error('Errore nel recupero dei contratti: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get all proposals for a specific client
+     *
+     * @param Client $client
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function proposals(Client $client)
+    {
+        try {
+            $proposals = $client->proposals()
+                ->with(['property', 'room'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return $this->success($proposals);
+
+        } catch (\Exception $e) {
+            return $this->error('Errore nel recupero delle proposte: ' . $e->getMessage(), 500);
+        }
+    }
 }

@@ -34,7 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Client resources
     Route::apiResource('clients', ClientController::class);
 
-    // Client document and folder management
+    // Client related data (documents, folders, contracts, proposals)
     Route::prefix('clients/{client}')->group(function () {
         // Document routes
         Route::get('/documents', [DocumentController::class, 'index'])->name('api.clients.documents.index');
@@ -49,6 +49,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/folders', [FolderController::class, 'store'])->name('api.clients.folders.store');
         Route::get('/folders/{folder}', [FolderController::class, 'show'])->name('api.clients.folders.show');
         Route::delete('/folders/{folder}', [FolderController::class, 'destroy'])->name('api.clients.folders.destroy');
+
+        // Contract routes
+        Route::get('/contracts', [ClientController::class, 'contracts'])->name('api.clients.contracts');
+
+        // Proposal routes
+        Route::get('/proposals', [ClientController::class, 'proposals'])->name('api.clients.proposals');
     });
 
     // Owner resources
