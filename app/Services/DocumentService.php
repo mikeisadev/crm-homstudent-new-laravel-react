@@ -78,7 +78,18 @@ class DocumentService
         // Full disk path
         $fullPath = "{$entityPath}/{$uuid}/{$relativePath}";
 
-        // Store file
+        // SAFETY: Ensure base directory structure exists (entity + UUID folders)
+        $this->ensureDirectoryStructure($entity);
+
+        // SAFETY: If uploading to a subfolder, ensure that folder path exists physically
+        if ($folderId && strpos($relativePath, '/') !== false) {
+            $folderPath = "{$entityPath}/{$uuid}/" . dirname($relativePath);
+            if (!Storage::disk($this->disk)->exists($folderPath)) {
+                Storage::disk($this->disk)->makeDirectory($folderPath, 0755, true); // recursive
+            }
+        }
+
+        // Store file (now safe - all directories guaranteed to exist)
         Storage::disk($this->disk)->put($fullPath, file_get_contents($file->getRealPath()));
 
         // Create document record
@@ -121,7 +132,10 @@ class DocumentService
             }
         }
 
-        // Create folder
+        // SAFETY: Ensure base directory structure exists before creating folder
+        $this->ensureDirectoryStructure($entity);
+
+        // Create folder (database record - virtual folder)
         $folder = new DocumentFolder();
         $folder->folderable()->associate($entity);
         $folder->parent_folder_id = $parentId;
@@ -244,6 +258,38 @@ class DocumentService
             'mimeType' => $document->mime_type,
             'filename' => $document->name,
         ];
+    }
+
+    /**
+     * SAFETY FEATURE: Ensure directory structure exists for entity
+     * Creates base entity directory and UUID directory if they don't exist
+     *
+     * This is critical for production to prevent upload failures
+     *
+     * Directory structure:
+     * - storage/app/private/{entity_type}_documents/        (base entity folder)
+     * - storage/app/private/{entity_type}_documents/{uuid}/ (UUID folder)
+     *
+     * @param mixed $entity - Entity model instance
+     * @return void
+     */
+    protected function ensureDirectoryStructure($entity)
+    {
+        $entityPath = $entity->getDocumentsStoragePath();
+        $uuid = $entity->documents_folder_uuid;
+
+        // Step 1: Ensure base entity directory exists (e.g., client_documents/)
+        if (!Storage::disk($this->disk)->exists($entityPath)) {
+            Storage::disk($this->disk)->makeDirectory($entityPath);
+            \Log::info("Created base entity directory: {$entityPath}");
+        }
+
+        // Step 2: Ensure UUID directory exists (e.g., client_documents/{uuid}/)
+        $uuidPath = "{$entityPath}/{$uuid}";
+        if (!Storage::disk($this->disk)->exists($uuidPath)) {
+            Storage::disk($this->disk)->makeDirectory($uuidPath);
+            \Log::info("Created UUID directory: {$uuidPath}");
+        }
     }
 
     /**
