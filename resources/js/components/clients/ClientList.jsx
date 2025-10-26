@@ -1,16 +1,22 @@
-import { useState } from 'react';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
+import Pagination from '../ui/Pagination';
 
 /**
  * ClientList Component
- * Left column - displays searchable/filterable client list
+ * Left column - displays searchable/filterable client list with server-side pagination
  *
  * @param {Array} clients - Array of client objects
  * @param {number|null} selectedClientId - ID of selected client
  * @param {function} onClientSelect - Callback when client is selected
  * @param {function} onNewClient - Callback for new client button
  * @param {boolean} loading - Whether clients are loading
+ * @param {string} searchTerm - Current search term (controlled by parent)
+ * @param {function} onSearchChange - Callback when search changes
+ * @param {string} filterType - Current filter type ('all', 'private', 'business')
+ * @param {function} onFilterChange - Callback when filter changes
+ * @param {object} pagination - Pagination metadata from API
+ * @param {function} onPageChange - Callback when page changes
  * @returns {JSX.Element}
  */
 export default function ClientList({
@@ -19,34 +25,13 @@ export default function ClientList({
     onClientSelect,
     onNewClient,
     loading = false,
+    searchTerm = '',
+    onSearchChange,
+    filterType = 'all',
+    onFilterChange,
+    pagination,
+    onPageChange,
 }) {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterType, setFilterType] = useState('all'); // 'all', 'private', 'business'
-
-    /**
-     * Filter clients based on search and type
-     */
-    const filteredClients = clients.filter((client) => {
-        // Search filter
-        const searchLower = searchTerm.toLowerCase();
-        const matchesSearch =
-            !searchTerm ||
-            client.first_name?.toLowerCase().includes(searchLower) ||
-            client.last_name?.toLowerCase().includes(searchLower) ||
-            client.company_name?.toLowerCase().includes(searchLower) ||
-            client.email?.toLowerCase().includes(searchLower) ||
-            client.phone?.includes(searchTerm) ||
-            client.mobile?.includes(searchTerm) ||
-            client.city?.toLowerCase().includes(searchLower);
-
-        // Type filter
-        const matchesType =
-            filterType === 'all' ||
-            (filterType === 'private' && client.type === 'private') ||
-            (filterType === 'business' && client.type === 'business');
-
-        return matchesSearch && matchesType;
-    });
 
     /**
      * Get display name for client
@@ -96,9 +81,10 @@ export default function ClientList({
                     <Input
                         type="text"
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => onSearchChange(e.target.value)}
                         placeholder="Cerca cliente"
                         className="w-full"
+                        disabled={loading}
                     />
                 </div>
 
@@ -111,8 +97,9 @@ export default function ClientList({
                             name="filter"
                             value="private"
                             checked={filterType === 'private'}
-                            onChange={(e) => setFilterType(e.target.value)}
+                            onChange={(e) => onFilterChange(e.target.value)}
                             className="mr-2"
+                            disabled={loading}
                         />
                         <span>Clienti privati</span>
                     </label>
@@ -122,15 +109,17 @@ export default function ClientList({
                             name="filter"
                             value="business"
                             checked={filterType === 'business'}
-                            onChange={(e) => setFilterType(e.target.value)}
+                            onChange={(e) => onFilterChange(e.target.value)}
                             className="mr-2"
+                            disabled={loading}
                         />
                         <span>Aziende</span>
                     </label>
                     {filterType !== 'all' && (
                         <button
-                            onClick={() => setFilterType('all')}
+                            onClick={() => onFilterChange('all')}
                             className="text-blue-500 text-xs underline"
+                            disabled={loading}
                         >
                             Mostra tutti
                         </button>
@@ -144,13 +133,16 @@ export default function ClientList({
                     <div className="flex items-center justify-center p-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                     </div>
-                ) : filteredClients.length === 0 ? (
+                ) : clients.length === 0 ? (
                     <div className="p-8 text-center text-gray-500">
                         <i className="material-icons text-4xl mb-2">person_off</i>
                         <p>Nessun cliente trovato</p>
+                        {(searchTerm || filterType !== 'all') && (
+                            <p className="text-sm mt-2">Prova a modificare i filtri di ricerca</p>
+                        )}
                     </div>
                 ) : (
-                    filteredClients.map((client) => (
+                    clients.map((client) => (
                         <div
                             key={client.id}
                             onClick={() => onClientSelect(client.id)}
@@ -177,11 +169,13 @@ export default function ClientList({
                 )}
             </div>
 
-            {/* Results count */}
-            {!loading && filteredClients.length > 0 && (
-                <div className="bg-gray-50 px-4 py-2 border-t border-gray-200 text-sm text-gray-600">
-                    {filteredClients.length} {filteredClients.length === 1 ? 'cliente' : 'clienti'}
-                </div>
+            {/* Pagination Controls */}
+            {!loading && pagination && (
+                <Pagination
+                    pagination={pagination}
+                    onPageChange={onPageChange}
+                    loading={loading}
+                />
             )}
         </div>
     );

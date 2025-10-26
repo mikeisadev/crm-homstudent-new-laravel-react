@@ -4,6 +4,7 @@ import ClientDetails from '../components/clients/ClientDetails';
 import ClientRelatedData from '../components/clients/ClientRelatedData';
 import ClientFormModal from '../components/clients/ClientFormModal';
 import api from '../services/api';
+import useDebounce from '../hooks/useDebounce';
 
 /**
  * Clients Page
@@ -24,41 +25,79 @@ export default function Clients() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    /**
-     * Fetch clients on component mount
-     */
-    useEffect(() => {
-        fetchClients();
-    }, []);
+    // Pagination state
+    const [pagination, setPagination] = useState({
+        current_page: 1,
+        last_page: 1,
+        total: 0,
+        per_page: 15,
+        from: 0,
+        to: 0,
+    });
+    const [currentPage, setCurrentPage] = useState(1);
+
+    // Search and filter state
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState('all'); // 'all', 'private', 'business'
+
+    // Debounce search to avoid too many API calls
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
     /**
-     * Fetch all clients from API
+     * Fetch clients when page, search, or filters change
      */
-    const fetchClients = async () => {
+    useEffect(() => {
+        fetchClients(currentPage, debouncedSearchTerm, filterType);
+    }, [currentPage, debouncedSearchTerm, filterType]);
+
+    /**
+     * Fetch clients from API with pagination and filters
+     *
+     * @param {number} page - Page number to fetch
+     * @param {string} search - Search term
+     * @param {string} type - Filter by type ('all', 'private', 'business')
+     */
+    const fetchClients = async (page = 1, search = '', type = 'all') => {
         setLoading(true);
         setError(null);
         try {
-            const response = await api.get('/clients');
+            // Build query parameters
+            const params = {
+                page,
+            };
+
+            // Add search parameter if provided
+            if (search && search.trim()) {
+                params.search = search.trim();
+            }
+
+            // Add type filter if not 'all'
+            if (type && type !== 'all') {
+                params.type = type;
+            }
+
+            const response = await api.get('/clients', { params });
 
             if (response.data.success) {
-                // Ensure we always set an array
-                const clientsData = response.data.data;
+                const responseData = response.data.data;
 
-                // If data is an object with a 'clients' property (pagination), use that
-                if (clientsData && typeof clientsData === 'object' && !Array.isArray(clientsData)) {
-                    if (Array.isArray(clientsData.clients)) {
-                        setClients(clientsData.clients);
-                    } else if (Array.isArray(clientsData.data)) {
-                        setClients(clientsData.data);
+                // Extract clients array and pagination metadata
+                if (responseData && typeof responseData === 'object') {
+                    // Set clients
+                    if (Array.isArray(responseData.clients)) {
+                        setClients(responseData.clients);
                     } else {
-                        // Convert object to array or set empty array
                         setClients([]);
-                        console.warn('Unexpected data format:', clientsData);
+                        console.warn('Unexpected clients format:', responseData);
                     }
-                } else if (Array.isArray(clientsData)) {
-                    setClients(clientsData);
+
+                    // Set pagination metadata
+                    if (responseData.pagination) {
+                        setPagination(responseData.pagination);
+                    }
                 } else {
                     setClients([]);
+                    console.warn('Unexpected response format:', responseData);
                 }
             } else {
                 throw new Error(response.data.message || 'Errore nel caricamento dei clienti');
@@ -66,11 +105,35 @@ export default function Clients() {
         } catch (err) {
             setError(err.response?.data?.message || err.message || 'Errore nel caricamento dei clienti');
             console.error('Error fetching clients:', err);
-            // Ensure clients is always an array even on error
             setClients([]);
         } finally {
             setLoading(false);
         }
+    };
+
+    /**
+     * Handle page change
+     */
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
+
+    /**
+     * Handle search term change
+     * Resets to page 1 when search changes
+     */
+    const handleSearchChange = (search) => {
+        setSearchTerm(search);
+        setCurrentPage(1); // Reset to first page on search
+    };
+
+    /**
+     * Handle filter type change
+     * Resets to page 1 when filter changes
+     */
+    const handleFilterChange = (type) => {
+        setFilterType(type);
+        setCurrentPage(1); // Reset to first page on filter change
     };
 
     /**
@@ -242,6 +305,12 @@ export default function Clients() {
                             onClientSelect={handleClientSelect}
                             onNewClient={handleNewClient}
                             loading={loading}
+                            searchTerm={searchTerm}
+                            onSearchChange={handleSearchChange}
+                            filterType={filterType}
+                            onFilterChange={handleFilterChange}
+                            pagination={pagination}
+                            onPageChange={handlePageChange}
                         />
                     </div>
 
