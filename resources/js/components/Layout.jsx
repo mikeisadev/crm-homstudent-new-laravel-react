@@ -13,6 +13,13 @@ export default function Layout() {
     const { user, logout } = useAuth();
     const toast = useToast();
 
+    /**
+     * Toggles.
+     * 
+     * By Michele Mincone.
+     */
+    const disableHeader = true;
+
     const handleLogout = async () => {
         try {
             await logout();
@@ -30,12 +37,13 @@ export default function Layout() {
 
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Header */}
-                <header className="bg-white shadow-sm border-b border-gray-200">
-                    <div className="px-6 py-4 flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                            <button
-                                onClick={() => setSidebarOpen(!sidebarOpen)}
-                                className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                {!disableHeader && (
+                    <header className="bg-white shadow-sm border-b border-gray-200">
+                        <div className="px-6 py-4 flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                                <button
+                                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                                    className="text-gray-500 hover:text-gray-700 focus:outline-none"
                             >
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -84,10 +92,10 @@ export default function Layout() {
                             )}
                         </div>
                     </div>
-                </header>
+                </header>)}
 
                 {/* Main content */}
-                <main className="flex-1 overflow-y-auto p-6">
+                <main className="flex-1 overflow-y-auto p-0">
                     <Outlet />
                 </main>
             </div>

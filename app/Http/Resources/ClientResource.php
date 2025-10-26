@@ -14,6 +14,35 @@ class ClientResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // Format meta data as key-value object
+        $metaData = [];
+        if ($this->relationLoaded('meta')) {
+            foreach ($this->meta as $meta) {
+                $metaData[$meta->meta_key] = $meta->meta_value;
+            }
+        }
+
+        // Format contacts data as key-value object
+        $contactsData = [];
+        if ($this->relationLoaded('contacts')) {
+            foreach ($this->contacts as $contact) {
+                $contactsData[$contact->type] = $contact->value;
+            }
+        }
+
+        // Format banking data as object (get primary)
+        $bankingData = [];
+        if ($this->relationLoaded('banking')) {
+            $primaryBanking = $this->banking->where('is_primary', true)->first();
+            if ($primaryBanking) {
+                $bankingData = [
+                    'bank_name' => $primaryBanking->bank_name,
+                    'iban' => $primaryBanking->iban,
+                    'payment_method' => $primaryBanking->payment_method,
+                ];
+            }
+        }
+
         return [
             'id' => $this->id,
             'type' => $this->type,
@@ -38,11 +67,13 @@ class ClientResource extends JsonResource
             'updated_at' => $this->updated_at?->toISOString(),
             'deleted_at' => $this->deleted_at?->toISOString(),
 
-            // Relationships (only when loaded)
-            'meta' => $this->whenLoaded('meta'),
+            // Formatted relationships as objects
+            'meta_data' => $metaData,
+            'contacts_data' => $contactsData,
+            'banking_data' => $bankingData,
+
+            // Other relationships (only when loaded)
             'addresses' => $this->whenLoaded('addresses'),
-            'contacts' => $this->whenLoaded('contacts'),
-            'banking' => $this->whenLoaded('banking'),
             'proposals' => $this->whenLoaded('proposals'),
             'contracts' => $this->whenLoaded('contracts'),
         ];

@@ -24,7 +24,7 @@ class ClientController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Client::query();
+            $query = Client::with(['meta', 'contacts', 'banking']);
 
             // Search functionality
             if ($request->has('search')) {
@@ -86,7 +86,65 @@ class ClientController extends Controller
     public function store(StoreClientRequest $request)
     {
         try {
-            $client = Client::create($request->validated());
+            \DB::beginTransaction();
+
+            $validated = $request->validated();
+
+            // Extract main client data
+            $clientData = collect($validated)->except(['meta_data', 'contacts_data', 'banking_data'])->toArray();
+
+            // Create client
+            $client = Client::create($clientData);
+
+            // Handle meta data
+            if (isset($validated['meta_data']) && is_array($validated['meta_data'])) {
+                foreach ($validated['meta_data'] as $key => $value) {
+                    if ($value !== null && $value !== '') {
+                        $client->setMeta($key, $value);
+                    }
+                }
+            }
+
+            // Handle contacts data
+            if (isset($validated['contacts_data']) && is_array($validated['contacts_data'])) {
+                $contactTypes = [
+                    'phone_secondary' => 'Telefono secondario',
+                    'email_secondary' => 'Email secondaria',
+                    'fax' => 'Fax',
+                    'pec' => 'PEC',
+                    'facebook' => 'Facebook',
+                    'linkedin' => 'LinkedIn',
+                ];
+
+                foreach ($validated['contacts_data'] as $type => $value) {
+                    if ($value !== null && $value !== '' && isset($contactTypes[$type])) {
+                        $client->contacts()->create([
+                            'type' => $type,
+                            'value' => $value,
+                            'label' => $contactTypes[$type],
+                            'is_primary' => false,
+                        ]);
+                    }
+                }
+            }
+
+            // Handle banking data
+            if (isset($validated['banking_data']) && is_array($validated['banking_data'])) {
+                $bankingData = $validated['banking_data'];
+                if (!empty(array_filter($bankingData))) {
+                    $client->banking()->create([
+                        'bank_name' => $bankingData['bank_name'] ?? null,
+                        'iban' => $bankingData['iban'] ?? null,
+                        'payment_method' => $bankingData['payment_method'] ?? null,
+                        'is_primary' => true,
+                    ]);
+                }
+            }
+
+            \DB::commit();
+
+            // Load relationships for response
+            $client->load(['meta', 'contacts', 'banking']);
 
             return $this->success(
                 new ClientResource($client),
@@ -95,6 +153,7 @@ class ClientController extends Controller
             );
 
         } catch (\Exception $e) {
+            \DB::rollBack();
             return $this->error('Errore nella creazione del cliente: ' . $e->getMessage(), 500);
         }
     }
@@ -139,17 +198,100 @@ class ClientController extends Controller
     public function update(UpdateClientRequest $request, int $id)
     {
         try {
+            \DB::beginTransaction();
+
             $client = Client::findOrFail($id);
-            $client->update($request->validated());
+            $validated = $request->validated();
+
+            // Extract main client data
+            $clientData = collect($validated)->except(['meta_data', 'contacts_data', 'banking_data'])->toArray();
+
+            // Update client
+            $client->update($clientData);
+
+            // Handle meta data
+            if (isset($validated['meta_data']) && is_array($validated['meta_data'])) {
+                foreach ($validated['meta_data'] as $key => $value) {
+                    if ($value !== null && $value !== '') {
+                        $client->setMeta($key, $value);
+                    } else {
+                        // Remove meta if value is empty
+                        $client->meta()->where('meta_key', $key)->delete();
+                    }
+                }
+            }
+
+            // Handle contacts data
+            if (isset($validated['contacts_data']) && is_array($validated['contacts_data'])) {
+                $contactTypes = [
+                    'phone_secondary' => 'Telefono secondario',
+                    'email_secondary' => 'Email secondaria',
+                    'fax' => 'Fax',
+                    'pec' => 'PEC',
+                    'facebook' => 'Facebook',
+                    'linkedin' => 'LinkedIn',
+                ];
+
+                foreach ($validated['contacts_data'] as $type => $value) {
+                    if ($value !== null && $value !== '' && isset($contactTypes[$type])) {
+                        $client->contacts()->updateOrCreate(
+                            ['type' => $type],
+                            [
+                                'value' => $value,
+                                'label' => $contactTypes[$type],
+                                'is_primary' => false,
+                            ]
+                        );
+                    } else {
+                        // Remove contact if value is empty
+                        $client->contacts()->where('type', $type)->delete();
+                    }
+                }
+            }
+
+            // Handle banking data
+            if (isset($validated['banking_data']) && is_array($validated['banking_data'])) {
+                $bankingData = $validated['banking_data'];
+
+                if (!empty(array_filter($bankingData))) {
+                    // Update or create primary banking record
+                    $primaryBanking = $client->banking()->where('is_primary', true)->first();
+
+                    if ($primaryBanking) {
+                        $primaryBanking->update([
+                            'bank_name' => $bankingData['bank_name'] ?? null,
+                            'iban' => $bankingData['iban'] ?? null,
+                            'payment_method' => $bankingData['payment_method'] ?? null,
+                        ]);
+                    } else {
+                        $client->banking()->create([
+                            'bank_name' => $bankingData['bank_name'] ?? null,
+                            'iban' => $bankingData['iban'] ?? null,
+                            'payment_method' => $bankingData['payment_method'] ?? null,
+                            'is_primary' => true,
+                        ]);
+                    }
+                } else {
+                    // Remove banking if all values are empty
+                    $client->banking()->where('is_primary', true)->delete();
+                }
+            }
+
+            \DB::commit();
+
+            // Load relationships for response
+            $client->load(['meta', 'contacts', 'banking']);
 
             return $this->success(
-                new ClientResource($client->fresh()),
+                new ClientResource($client->fresh(['meta', 'contacts', 'banking'])),
                 'Cliente aggiornato con successo'
             );
 
         } catch (ModelNotFoundException $e) {
+            \DB::rollBack();
             return $this->error('Cliente non trovato', 404);
         } catch (\Exception $e) {
+            \DB::rollBack();
             return $this->error('Errore nell\'aggiornamento del cliente: ' . $e->getMessage(), 500);
         }
     }

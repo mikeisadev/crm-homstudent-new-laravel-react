@@ -669,7 +669,7 @@ export default function Calendar() {
     };
 
     return (
-        <div>
+        <div className="p-6">
             {/* Header with title and action buttons */}
             <div className="bg-white p-6 rounded-lg shadow-md mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

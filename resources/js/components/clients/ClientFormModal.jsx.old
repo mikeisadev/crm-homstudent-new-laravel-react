@@ -1,0 +1,525 @@
+import { useState, useEffect } from 'react';
+import Modal from '../ui/Modal';
+import Button from '../ui/Button';
+import Input from '../ui/Input';
+import FormField from '../ui/FormField';
+import Select from '../ui/Select';
+import DatePicker from '../ui/DatePicker';
+import { validateClientForm } from '../../utils/clientValidation';
+
+/**
+ * ClientFormModal Component
+ * Modal for adding/editing clients with Privato/Azienda type toggle
+ *
+ * @param {boolean} isOpen - Whether modal is open
+ * @param {function} onClose - Close modal callback
+ * @param {function} onSave - Save client callback
+ * @param {Object|null} client - Client data for editing (null for new)
+ * @returns {JSX.Element}
+ */
+export default function ClientFormModal({ isOpen, onClose, onSave, client = null }) {
+    const [clientType, setClientType] = useState('private'); // 'private' or 'business'
+    const [formData, setFormData] = useState({});
+    const [errors, setErrors] = useState({});
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Initialize form data
+    useEffect(() => {
+        if (client) {
+            // Editing existing client
+            setFormData(client);
+            setClientType(client.tipo_cli === 1 ? 'business' : 'private');
+        } else {
+            // New client - reset form
+            setFormData({
+                tipo_cli: 0, // 0 = private, 1 = business
+                rag_soc: '',
+                nome: '',
+                cognome: '',
+                c_f: '',
+                p_iva: '',
+                cod_univ: '',
+                tipo_doc: '',
+                numero_doc: '',
+                rilasciato_da: '',
+                email: '',
+                telefono: '',
+                cellulare: '',
+                indirizzo: '',
+                numero_civico: '',
+                cap: '',
+                comune: '',
+                prov: '',
+                nazione: '',
+                data_nascita: '',
+                comune_nascita: '',
+                prov_nascita: '',
+                stato_nascita: '',
+                nazionalita: '',
+                sesso: '',
+                tel2: '',
+                email2: '',
+                fax: '',
+                pec: '',
+                nome_padre: '',
+                nome_madre: '',
+                facebook: '',
+                linkedin: '',
+                rilasciato_il: '',
+                scadenza: '',
+                banca: '',
+                iban: '',
+                mod_pag: '',
+                email_fatt: '',
+                note: '',
+            });
+            setClientType('private');
+            setErrors({});
+        }
+    }, [client, isOpen]);
+
+    /**
+     * Handle type toggle (Privato/Azienda)
+     */
+    const handleTypeChange = (type) => {
+        setClientType(type);
+        setFormData({
+            ...formData,
+            tipo_cli: type === 'business' ? 1 : 0,
+        });
+        setErrors({}); // Clear errors when switching type
+    };
+
+    /**
+     * Handle input change
+     */
+    const handleChange = (field, value) => {
+        setFormData({
+            ...formData,
+            [field]: value,
+        });
+        // Clear error for this field
+        if (errors[field]) {
+            setErrors({
+                ...errors,
+                [field]: undefined,
+            });
+        }
+    };
+
+    /**
+     * Handle form submit
+     */
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        // Validate form
+        const validation = validateClientForm(formData, clientType);
+        setErrors(validation.errors);
+
+        if (!validation.isValid) {
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            await onSave(formData);
+            onClose();
+        } catch (error) {
+            // Handle error (shown by parent component)
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    return (
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={client ? 'Modifica cliente' : 'Inserisci nuovo cliente'}
+            size="4xl"
+        >
+            <form onSubmit={handleSubmit}>
+                {/* Type Selector */}
+                <div className="mb-6 flex items-center justify-center gap-8">
+                    <label className="flex items-center cursor-pointer">
+                        <input
+                            type="radio"
+                            name="tipo"
+                            checked={clientType === 'private'}
+                            onChange={() => handleTypeChange('private')}
+                            className="mr-2"
+                        />
+                        <span className="text-blue-500 font-medium">Privato</span>
+                    </label>
+                    <label className="flex items-center cursor-pointer">
+                        <input
+                            type="radio"
+                            name="tipo"
+                            checked={clientType === 'business'}
+                            onChange={() => handleTypeChange('business')}
+                            className="mr-2"
+                        />
+                        <span className="text-blue-500 font-medium">Azienda</span>
+                    </label>
+                </div>
+
+                {/* Form Fields - 4 Column Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 max-h-[70vh] overflow-y-auto px-2">
+                    {/* Row 1 */}
+                    {clientType === 'business' && (
+                        <FormField
+                            label="Ragione Sociale"
+                            error={errors.rag_soc}
+                            required
+                        >
+                            <Input
+                                value={formData.rag_soc || ''}
+                                onChange={(e) => handleChange('rag_soc', e.target.value)}
+                                placeholder="Digita il nome dell'azienda..."
+                            />
+                        </FormField>
+                    )}
+
+                    <FormField label="Nome" error={errors.nome} required={clientType === 'private'}>
+                        <Input
+                            value={formData.nome || ''}
+                            onChange={(e) => handleChange('nome', e.target.value)}
+                            placeholder="Digita il nome ..."
+                        />
+                    </FormField>
+
+                    <FormField label="Cognome" error={errors.cognome} required={clientType === 'private'}>
+                        <Input
+                            value={formData.cognome || ''}
+                            onChange={(e) => handleChange('cognome', e.target.value)}
+                            placeholder="Digita il cognome..."
+                        />
+                    </FormField>
+
+                    {/* Row 2 */}
+                    <FormField
+                        label="Codice Fiscale"
+                        error={errors.c_f}
+                        required={clientType === 'private'}
+                    >
+                        <Input
+                            value={formData.c_f || ''}
+                            onChange={(e) => handleChange('c_f', e.target.value.toUpperCase())}
+                            placeholder="Digita cod. fisc"
+                            maxLength={16}
+                        />
+                    </FormField>
+
+                    {clientType === 'business' && (
+                        <FormField label="Partita Iva" error={errors.p_iva} required>
+                            <Input
+                                value={formData.p_iva || ''}
+                                onChange={(e) => handleChange('p_iva', e.target.value)}
+                                placeholder="Digita p. Iva"
+                                maxLength={11}
+                            />
+                        </FormField>
+                    )}
+
+                    {clientType === 'business' && (
+                        <FormField label="Codice univoco" error={errors.cod_univ}>
+                            <Input
+                                value={formData.cod_univ || ''}
+                                onChange={(e) => handleChange('cod_univ', e.target.value)}
+                                placeholder="Digita sdi"
+                            />
+                        </FormField>
+                    )}
+
+                    {clientType === 'private' && (
+                        <FormField label="Tipo di documento:" error={errors.tipo_doc}>
+                            <Input
+                                value={formData.tipo_doc || ''}
+                                onChange={(e) => handleChange('tipo_doc', e.target.value)}
+                                placeholder="Es: Carta d'identità"
+                            />
+                        </FormField>
+                    )}
+
+                    {/* Row 3 */}
+                    <FormField label="Numero documento" error={errors.numero_doc}>
+                        <Input
+                            value={formData.numero_doc || ''}
+                            onChange={(e) => handleChange('numero_doc', e.target.value)}
+                            placeholder="Numero documento"
+                        />
+                    </FormField>
+
+                    <FormField label="Documento rilasciato da" error={errors.rilasciato_da}>
+                        <Input
+                            value={formData.rilasciato_da || ''}
+                            onChange={(e) => handleChange('rilasciato_da', e.target.value)}
+                            placeholder="Rilasciato da"
+                        />
+                    </FormField>
+
+                    <FormField label="Email" error={errors.email} required>
+                        <Input
+                            type="email"
+                            value={formData.email || ''}
+                            onChange={(e) => handleChange('email', e.target.value)}
+                            placeholder="info@paolorossi.it"
+                        />
+                    </FormField>
+
+                    <FormField label="Telefono" error={errors.telefono} required>
+                        <Input
+                            type="tel"
+                            value={formData.telefono || ''}
+                            onChange={(e) => handleChange('telefono', e.target.value)}
+                            placeholder="+39 348 0000 000"
+                        />
+                    </FormField>
+
+                    {/* Row 4 */}
+                    <FormField label="Cellulare" error={errors.cellulare}>
+                        <Input
+                            type="tel"
+                            value={formData.cellulare || ''}
+                            onChange={(e) => handleChange('cellulare', e.target.value)}
+                            placeholder="+39 348 0000 000"
+                        />
+                    </FormField>
+
+                    <FormField label="Indirizzo" error={errors.indirizzo}>
+                        <Input
+                            value={formData.indirizzo || ''}
+                            onChange={(e) => handleChange('indirizzo', e.target.value)}
+                            placeholder="Inserisci indirizzo"
+                        />
+                    </FormField>
+
+                    <FormField label="Numero civico" error={errors.numero_civico}>
+                        <Input
+                            value={formData.numero_civico || ''}
+                            onChange={(e) => handleChange('numero_civico', e.target.value)}
+                            placeholder="Inserisci il numero civico"
+                        />
+                    </FormField>
+
+                    <FormField label="Cap" error={errors.cap}>
+                        <Input
+                            value={formData.cap || ''}
+                            onChange={(e) => handleChange('cap', e.target.value)}
+                            placeholder="CAP"
+                            maxLength={10}
+                        />
+                    </FormField>
+
+                    {/* Row 5 */}
+                    <FormField label="Comune" error={errors.comune}>
+                        <Input
+                            value={formData.comune || ''}
+                            onChange={(e) => handleChange('comune', e.target.value)}
+                            placeholder="Comune"
+                        />
+                    </FormField>
+
+                    <FormField label="Provincia" error={errors.prov}>
+                        <Input
+                            value={formData.prov || ''}
+                            onChange={(e) => handleChange('prov', e.target.value.toUpperCase())}
+                            placeholder="Provincia"
+                            maxLength={2}
+                        />
+                    </FormField>
+
+                    <FormField label="Nazione" error={errors.nazione}>
+                        <Input
+                            value={formData.nazione || ''}
+                            onChange={(e) => handleChange('nazione', e.target.value)}
+                            placeholder="Nazione"
+                        />
+                    </FormField>
+
+                    <FormField label="Data di nascita:" error={errors.data_nascita}>
+                        <DatePicker
+                            value={formData.data_nascita || ''}
+                            onChange={(date) => handleChange('data_nascita', date[0])}
+                            placeholder="gg/mm/aaaa"
+                        />
+                    </FormField>
+
+                    {/* Row 6 */}
+                    <FormField label="Comune nascita:" error={errors.comune_nascita}>
+                        <Input
+                            value={formData.comune_nascita || ''}
+                            onChange={(e) => handleChange('comune_nascita', e.target.value)}
+                            placeholder="Comune di nascita"
+                        />
+                    </FormField>
+
+                    <FormField label="Provincia di nascita:" error={errors.prov_nascita}>
+                        <Input
+                            value={formData.prov_nascita || ''}
+                            onChange={(e) => handleChange('prov_nascita', e.target.value.toUpperCase())}
+                            placeholder="Provincia"
+                            maxLength={2}
+                        />
+                    </FormField>
+
+                    <FormField label="Stato di nascita:" error={errors.stato_nascita}>
+                        <Input
+                            value={formData.stato_nascita || ''}
+                            onChange={(e) => handleChange('stato_nascita', e.target.value)}
+                            placeholder="Stato di nascita"
+                        />
+                    </FormField>
+
+                    <FormField label="Nazionalità:" error={errors.nazionalita}>
+                        <Input
+                            value={formData.nazionalita || ''}
+                            onChange={(e) => handleChange('nazionalita', e.target.value)}
+                            placeholder="Nazionalità"
+                        />
+                    </FormField>
+
+                    {/* Row 7 */}
+                    <FormField label="Sesso:" error={errors.sesso}>
+                        <Select
+                            options={[
+                                { value: 'M', label: 'M' },
+                                { value: 'F', label: 'F' },
+                            ]}
+                            value={formData.sesso ? { value: formData.sesso, label: formData.sesso } : null}
+                            onChange={(option) => handleChange('sesso', option?.value || '')}
+                            placeholder="Seleziona"
+                        />
+                    </FormField>
+
+                    <FormField label="Telefono2:" error={errors.tel2}>
+                        <Input
+                            type="tel"
+                            value={formData.tel2 || ''}
+                            onChange={(e) => handleChange('tel2', e.target.value)}
+                            placeholder="Telefono 2"
+                        />
+                    </FormField>
+
+                    <FormField label="Email2:" error={errors.email2}>
+                        <Input
+                            type="email"
+                            value={formData.email2 || ''}
+                            onChange={(e) => handleChange('email2', e.target.value)}
+                            placeholder="Email 2"
+                        />
+                    </FormField>
+
+                    <FormField label="Fax:" error={errors.fax}>
+                        <Input
+                            value={formData.fax || ''}
+                            onChange={(e) => handleChange('fax', e.target.value)}
+                            placeholder="Fax"
+                        />
+                    </FormField>
+
+                    {/* Row 8 */}
+                    <FormField label="Pec:" error={errors.pec}>
+                        <Input
+                            type="email"
+                            value={formData.pec || ''}
+                            onChange={(e) => handleChange('pec', e.target.value)}
+                            placeholder="PEC"
+                        />
+                    </FormField>
+
+                    <FormField label="Nome padre:" error={errors.nome_padre}>
+                        <Input
+                            value={formData.nome_padre || ''}
+                            onChange={(e) => handleChange('nome_padre', e.target.value)}
+                            placeholder="Nome padre"
+                        />
+                    </FormField>
+
+                    <FormField label="Nome madre:" error={errors.nome_madre}>
+                        <Input
+                            value={formData.nome_madre || ''}
+                            onChange={(e) => handleChange('nome_madre', e.target.value)}
+                            placeholder="Nome madre"
+                        />
+                    </FormField>
+
+                    <FormField label="Facebook:" error={errors.facebook}>
+                        <Input
+                            value={formData.facebook || ''}
+                            onChange={(e) => handleChange('facebook', e.target.value)}
+                            placeholder="Facebook"
+                        />
+                    </FormField>
+
+                    {/* Row 9 */}
+                    <FormField label="Linkedin:" error={errors.linkedin}>
+                        <Input
+                            value={formData.linkedin || ''}
+                            onChange={(e) => handleChange('linkedin', e.target.value)}
+                            placeholder="LinkedIn"
+                        />
+                    </FormField>
+
+                    <FormField label="Rilasciato il:" error={errors.rilasciato_il}>
+                        <DatePicker
+                            value={formData.rilasciato_il || ''}
+                            onChange={(date) => handleChange('rilasciato_il', date[0])}
+                            placeholder="gg/mm/aaaa"
+                        />
+                    </FormField>
+
+                    <FormField label="Scadenza:" error={errors.scadenza}>
+                        <DatePicker
+                            value={formData.scadenza || ''}
+                            onChange={(date) => handleChange('scadenza', date[0])}
+                            placeholder="gg/mm/aaaa"
+                        />
+                    </FormField>
+
+                    <FormField label="Banca:" error={errors.banca}>
+                        <Input
+                            value={formData.banca || ''}
+                            onChange={(e) => handleChange('banca', e.target.value)}
+                            placeholder="Nome banca"
+                        />
+                    </FormField>
+
+                    {/* Row 10 */}
+                    <FormField label="IBAN:" error={errors.iban}>
+                        <Input
+                            value={formData.iban || ''}
+                            onChange={(e) => handleChange('iban', e.target.value.toUpperCase())}
+                            placeholder="IT00A0000000000000000000000"
+                        />
+                    </FormField>
+
+                    <FormField label="Mod. Pagamento:" error={errors.mod_pag}>
+                        <Input
+                            value={formData.mod_pag || ''}
+                            onChange={(e) => handleChange('mod_pag', e.target.value)}
+                            placeholder="Modalità di pagamento"
+                        />
+                    </FormField>
+
+                    <FormField label="Email per fatture:" error={errors.email_fatt}>
+                        <Input
+                            type="email"
+                            value={formData.email_fatt || ''}
+                            onChange={(e) => handleChange('email_fatt', e.target.value)}
+                            placeholder="Email fatturazione"
+                        />
+                    </FormField>
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex justify-center mt-6">
+                    <Button type="submit" variant="primary" disabled={isSaving}>
+                        {isSaving ? 'Salvataggio...' : 'Salva'}
+                    </Button>
+                </div>
+            </form>
+        </Modal>
+    );
+}
