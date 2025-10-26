@@ -3,6 +3,7 @@ import AccordionSection from '../ui/AccordionSection';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import DatePicker from '../ui/DatePicker';
+import DateUtil from '../../utils/date';
 
 /**
  * Generic Registry Details Component
@@ -270,7 +271,9 @@ export default function RegistryDetails({ config, item, onEdit, onDelete, onUpda
             const value = formData[field.key];
 
             if (field.isMeta) {
-                payload.meta_data[field.key] = value;
+                field.type === 'date' 
+                    ? payload.meta_data[field.key] = DateUtil.formatDate(value) 
+                    : payload.meta_data[field.key] = value;
             } else if (field.isContact) {
                 payload.contacts_data[field.key] = value;
             } else if (field.isBanking) {
@@ -388,14 +391,12 @@ export default function RegistryDetails({ config, item, onEdit, onDelete, onUpda
                         ) : field.type === 'date' ? (
                             // DATE picker (Flatpickr)
                             <DatePicker
-                                value={editValue}
+                                value={(new Date(editValue))}
                                 onChange={([date]) => {
-                                    // Flatpickr returns array of dates, convert to ISO string (YYYY-MM-DD)
-                                    const isoDate = date ? date.toISOString().split('T')[0] : '';
                                     if (isGlobalEditMode) {
-                                        handleGlobalFieldChange(field.key, isoDate);
+                                        handleGlobalFieldChange(field.key, date);
                                     } else {
-                                        handleFieldChange(accordionKey, field.key, isoDate);
+                                        handleFieldChange(accordionKey, field.key, date);
                                     }
                                 }}
                                 placeholder="Seleziona data"

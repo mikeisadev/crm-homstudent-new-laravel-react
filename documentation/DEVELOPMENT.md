@@ -2564,3 +2564,59 @@ Condominium #1 UUID: 7635c8d3-8a2f-4277-9534-e915ee59bd3b
 
 ---
 
+
+---
+
+## 🐛 BUGFIX - Disk Configuration Error (2025-10-26 19:04)
+
+### Problem
+After implementing CHECKPOINT 5, document upload and folder creation failed for Rooms, Properties, and Condominiums with error:
+```
+Disk [private] does not have a configured driver.
+```
+
+**Affected**: Rooms, Properties, Condominiums (3/4 entities)
+**Not Affected**: Clients (working correctly)
+
+### Root Cause
+`DocumentService.php` referenced a non-existent disk:
+```php
+protected $disk = 'private';  // ❌ This disk was never configured
+```
+
+Available disks in `config/filesystems.php`:
+- ✅ 'local' (root = storage/app/private)
+- ✅ 'public'
+- ✅ 's3'
+- ❌ 'private' (DOES NOT EXIST)
+
+### Solution
+Changed `DocumentService.php` line 30:
+```php
+// Before
+protected $disk = 'private';
+
+// After
+protected $disk = 'local';  // Uses existing disk with private root
+```
+
+### Verification
+- ✅ Room folder creation: SUCCESS
+- ✅ Property folder creation: SUCCESS
+- ✅ Condominium folder creation: SUCCESS
+- ✅ Document upload: SUCCESS (UUID filename: 6130dea6-3254-4757-8396-97d2d0106e70.pdf)
+- ✅ Directory auto-creation: SUCCESS (logged correctly)
+- ✅ All entity types: 100% OPERATIONAL
+
+### Impact
+**Before**: 0% of polymorphic entities working (CRITICAL BUG)
+**After**: 100% of all entities working (FULLY OPERATIONAL)
+
+### Files Modified
+- `app/Services/DocumentService.php` (1 line change)
+
+### Related Documentation
+See `documentation/BUGFIX_DISK_CONFIGURATION.md` for complete analysis.
+
+---
+

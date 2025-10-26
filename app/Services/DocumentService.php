@@ -25,8 +25,9 @@ class DocumentService
 {
     /**
      * Storage disk for documents
+     * Using 'local' disk which is configured with root = storage_path('app/private')
      */
-    protected $disk = 'private';
+    protected $disk = 'local';
 
     /**
      * Allowed file extensions
