@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\CalendarController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\CondominiumController;
 use App\Http\Controllers\Api\ContractController;
+use App\Http\Controllers\Api\DocumentController;
+use App\Http\Controllers\Api\FolderController;
 use App\Http\Controllers\Api\OwnerController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\ProposalController;
@@ -31,6 +33,23 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Client resources
     Route::apiResource('clients', ClientController::class);
+
+    // Client document and folder management
+    Route::prefix('clients/{client}')->group(function () {
+        // Document routes
+        Route::get('/documents', [DocumentController::class, 'index'])->name('api.clients.documents.index');
+        Route::post('/documents', [DocumentController::class, 'upload'])->name('api.clients.documents.upload');
+        Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('api.clients.documents.show');
+        Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('api.clients.documents.download');
+        Route::get('/documents/{document}/view', [DocumentController::class, 'view'])->name('api.clients.documents.view');
+        Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('api.clients.documents.destroy');
+
+        // Folder routes
+        Route::get('/folders', [FolderController::class, 'index'])->name('api.clients.folders.index');
+        Route::post('/folders', [FolderController::class, 'store'])->name('api.clients.folders.store');
+        Route::get('/folders/{folder}', [FolderController::class, 'show'])->name('api.clients.folders.show');
+        Route::delete('/folders/{folder}', [FolderController::class, 'destroy'])->name('api.clients.folders.destroy');
+    });
 
     // Owner resources
     Route::apiResource('owners', OwnerController::class);

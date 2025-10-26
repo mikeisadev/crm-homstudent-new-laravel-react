@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class Client extends Model
 {
@@ -28,11 +30,40 @@ class Client extends Model
         'origin_source',
         'origin_details',
         'notes',
+        'documents_folder_uuid',
     ];
 
     protected $casts = [
         'type' => 'string',
     ];
+
+    /**
+     * Boot method - Generate UUID and create folder on client creation
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($client) {
+            // Generate UUID for document storage folder
+            if (empty($client->documents_folder_uuid)) {
+                $client->documents_folder_uuid = (string) Str::uuid();
+            }
+
+            // Create private document folder
+            $folderPath = 'client_documents/' . $client->documents_folder_uuid;
+            if (!Storage::exists($folderPath)) {
+                Storage::makeDirectory($folderPath, 0755, true);
+            }
+        });
+
+        static::deleting(function ($client) {
+            // Soft delete - keep files but mark as deleted
+            // For hard delete (future), uncomment below:
+            // $folderPath = 'client_documents/' . $client->documents_folder_uuid;
+            // Storage::deleteDirectory($folderPath);
+        });
+    }
 
     // Relationships
     public function meta()
@@ -78,6 +109,16 @@ class Client extends Model
     public function penalties()
     {
         return $this->hasMany(Penalty::class);
+    }
+
+    public function folders()
+    {
+        return $this->hasMany(ClientFolder::class);
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(ClientDocument::class);
     }
 
     // Helper method to get meta value

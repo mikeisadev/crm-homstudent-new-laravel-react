@@ -32,13 +32,16 @@ class DatabaseSeeder extends Seeder
     {
         $this->command->info('Starting database seeding...');
 
-        // Create admin user
-        User::factory()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@crm-homstudent.com',
-        ]);
+        // Create or use existing admin user
+        $user = User::firstOrCreate(
+            ['email' => 'admin@crm-homstudent.com'],
+            [
+                'name' => 'Admin User',
+                'password' => bcrypt('password'),
+            ]
+        );
 
-        $this->command->info('Created admin user');
+        $this->command->info($user->wasRecentlyCreated ? 'Created admin user' : 'Using existing admin user');
 
         // Step 1: Create base entities (no foreign key dependencies)
         $this->command->info('Creating clients...');
