@@ -4,13 +4,16 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CalendarController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\CondominiumController;
+use App\Http\Controllers\Api\CondominiumDocumentController;
 use App\Http\Controllers\Api\ContractController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\FolderController;
 use App\Http\Controllers\Api\OwnerController;
 use App\Http\Controllers\Api\PropertyController;
+use App\Http\Controllers\Api\PropertyDocumentController;
 use App\Http\Controllers\Api\ProposalController;
 use App\Http\Controllers\Api\RoomController;
+use App\Http\Controllers\Api\RoomDocumentController;
 use App\Http\Controllers\Api\SupplierController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -71,6 +74,75 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Room resources
     Route::apiResource('rooms', RoomController::class);
+
+    // Room related data (documents, folders, contracts, proposals)
+    Route::prefix('rooms/{room}')->group(function () {
+        // Document routes
+        Route::get('/documents', [RoomDocumentController::class, 'index']);
+        Route::post('/documents', [RoomDocumentController::class, 'store']);
+        Route::get('/documents/{document}', [RoomDocumentController::class, 'show']);
+        Route::get('/documents/{document}/download', [RoomDocumentController::class, 'download']);
+        Route::get('/documents/{document}/view', [RoomDocumentController::class, 'view']);
+        Route::delete('/documents/{document}', [RoomDocumentController::class, 'destroy']);
+
+        // Folder routes
+        Route::get('/folders', [RoomDocumentController::class, 'indexFolders']);
+        Route::post('/folders', [RoomDocumentController::class, 'storeFolder']);
+        Route::get('/folders/{folder}', [RoomDocumentController::class, 'showFolder']);
+        Route::delete('/folders/{folder}', [RoomDocumentController::class, 'destroyFolder']);
+
+        // Contract routes
+        Route::get('/contracts', [RoomController::class, 'contracts']);
+
+        // Proposal routes
+        Route::get('/proposals', [RoomController::class, 'proposals']);
+    });
+
+    // Property resources
+    Route::apiResource('properties', PropertyController::class);
+
+    // Property related data (documents, folders, contracts, proposals)
+    Route::prefix('properties/{property}')->group(function () {
+        // Document routes
+        Route::get('/documents', [PropertyDocumentController::class, 'index']);
+        Route::post('/documents', [PropertyDocumentController::class, 'store']);
+        Route::get('/documents/{document}', [PropertyDocumentController::class, 'show']);
+        Route::get('/documents/{document}/download', [PropertyDocumentController::class, 'download']);
+        Route::get('/documents/{document}/view', [PropertyDocumentController::class, 'view']);
+        Route::delete('/documents/{document}', [PropertyDocumentController::class, 'destroy']);
+
+        // Folder routes
+        Route::get('/folders', [PropertyDocumentController::class, 'indexFolders']);
+        Route::post('/folders', [PropertyDocumentController::class, 'storeFolder']);
+        Route::get('/folders/{folder}', [PropertyDocumentController::class, 'showFolder']);
+        Route::delete('/folders/{folder}', [PropertyDocumentController::class, 'destroyFolder']);
+
+        // Contract routes
+        Route::get('/contracts', [PropertyController::class, 'contracts']);
+
+        // Proposal routes
+        Route::get('/proposals', [PropertyController::class, 'proposals']);
+    });
+
+    // Condominium resources
+    Route::apiResource('condominiums', CondominiumController::class);
+
+    // Condominium related data (documents, folders)
+    Route::prefix('condominiums/{condominium}')->group(function () {
+        // Document routes
+        Route::get('/documents', [CondominiumDocumentController::class, 'index']);
+        Route::post('/documents', [CondominiumDocumentController::class, 'store']);
+        Route::get('/documents/{document}', [CondominiumDocumentController::class, 'show']);
+        Route::get('/documents/{document}/download', [CondominiumDocumentController::class, 'download']);
+        Route::get('/documents/{document}/view', [CondominiumDocumentController::class, 'view']);
+        Route::delete('/documents/{document}', [CondominiumDocumentController::class, 'destroy']);
+
+        // Folder routes
+        Route::get('/folders', [CondominiumDocumentController::class, 'indexFolders']);
+        Route::post('/folders', [CondominiumDocumentController::class, 'storeFolder']);
+        Route::get('/folders/{folder}', [CondominiumDocumentController::class, 'showFolder']);
+        Route::delete('/folders/{folder}', [CondominiumDocumentController::class, 'destroyFolder']);
+    });
 
     // Proposal resources
     Route::apiResource('proposals', ProposalController::class);

@@ -1,12 +1,18 @@
-import React from 'react';
+import RegistryPage from '../components/registry/RegistryPage';
+import { propertiesConfig } from '../config/registryConfigs';
 
+/**
+ * Properties Page
+ *
+ * Thin wrapper around RegistryPage with properties configuration
+ * Handles Immobili (Properties) management with:
+ * - Searchable/paginated list
+ * - Detail view with accordions (Info generali, Dati strutturali, Servizi, Dati catastali, Impianti)
+ * - Related data tabs (Contratti, Contratti di gestione, Documenti, Foto, Manutenzioni, Sanzioni, Bollette, Dotazioni, Proprietari)
+ * - Create/Edit modal
+ *
+ * @returns {JSX.Element}
+ */
 export default function Properties() {
-    return (
-        <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">Immobili</h1>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-                <p className="text-gray-600">Modulo Immobili - In costruzione</p>
-            </div>
-        </div>
-    );
+    return <RegistryPage config={propertiesConfig} />;
 }

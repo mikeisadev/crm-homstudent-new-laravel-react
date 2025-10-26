@@ -1,251 +1,138 @@
-import api from './api';
+import { clientDocumentService } from './genericDocumentService';
 
 /**
- * Servizio per la gestione dei documenti e cartelle dei clienti
+ * Client-specific document service
+ * This is a wrapper around the generic document service for backward compatibility
+ * All new code should use genericDocumentService directly
  */
 const documentService = {
-    // ==================== DOCUMENTI ====================
+    // ==================== DOCUMENTS ====================
 
     /**
-     * Ottiene la lista dei documenti di un cliente
-     * @param {number|string} clientId - ID del cliente
-     * @param {number|string|null} folderId - ID della cartella (null per root)
+     * Get list of documents for a client
+     * @param {number|string} clientId - Client ID
+     * @param {number|string|null} folderId - Folder ID (null for root)
      * @returns {Promise<Object>}
      */
     async getDocuments(clientId, folderId = null) {
-        const params = folderId !== null ? { folder_id: folderId } : {};
-        const response = await api.get(`/clients/${clientId}/documents`, { params });
-        return response.data;
+        return clientDocumentService.getDocuments(clientId, folderId);
     },
 
     /**
-     * Carica un nuovo documento per un cliente
-     * @param {number|string} clientId - ID del cliente
-     * @param {File} file - File da caricare
-     * @param {number|string|null} folderId - ID della cartella di destinazione
-     * @param {Function} onUploadProgress - Callback per il progresso del caricamento
+     * Upload a new document
+     * @param {number|string} clientId - Client ID
+     * @param {File} file - File to upload
+     * @param {number|string|null} folderId - Target folder ID
+     * @param {Function} onUploadProgress - Progress callback
      * @returns {Promise<Object>}
      */
     async uploadDocument(clientId, file, folderId = null, onUploadProgress = null) {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        if (folderId !== null) {
-            formData.append('folder_id', folderId);
-        }
-
-        const config = {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        };
-
-        if (onUploadProgress) {
-            config.onUploadProgress = (progressEvent) => {
-                const percentCompleted = Math.round(
-                    (progressEvent.loaded * 100) / progressEvent.total
-                );
-                onUploadProgress(percentCompleted);
-            };
-        }
-
-        const response = await api.post(
-            `/clients/${clientId}/documents`,
-            formData,
-            config
-        );
-        return response.data;
+        return clientDocumentService.uploadDocument(clientId, file, folderId, onUploadProgress);
     },
 
     /**
-     * Ottiene i dettagli di un singolo documento
-     * @param {number|string} clientId - ID del cliente
-     * @param {number|string} documentId - ID del documento
+     * Get document details
+     * @param {number|string} clientId - Client ID
+     * @param {number|string} documentId - Document ID
      * @returns {Promise<Object>}
      */
     async getDocument(clientId, documentId) {
-        const response = await api.get(`/clients/${clientId}/documents/${documentId}`);
-        return response.data;
+        return clientDocumentService.getDocument(clientId, documentId);
     },
 
     /**
-     * Scarica un documento
-     * @param {number|string} clientId - ID del cliente
-     * @param {number|string} documentId - ID del documento
-     * @param {string} filename - Nome del file per il download
+     * Download a document
+     * @param {number|string} clientId - Client ID
+     * @param {number|string} documentId - Document ID
+     * @param {string} filename - Filename for download
      * @returns {Promise<void>}
      */
     async downloadDocument(clientId, documentId, filename) {
-        try {
-            const response = await api.get(
-                `/clients/${clientId}/documents/${documentId}/download`,
-                { responseType: 'blob' }
-            );
-
-            // Create a blob URL and trigger download
-            const blob = new Blob([response.data], { type: response.headers['content-type'] });
-            const blobUrl = window.URL.createObjectURL(blob);
-
-            // Create temporary anchor to trigger download
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = filename || 'download';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            // Clean up blob URL
-            window.URL.revokeObjectURL(blobUrl);
-        } catch (error) {
-            console.error('Error downloading document:', error);
-            throw error;
-        }
+        return clientDocumentService.downloadDocument(clientId, documentId, filename);
     },
 
     /**
-     * Visualizza un documento nel browser (PDFs e immagini)
-     * @param {number|string} clientId - ID del cliente
-     * @param {number|string} documentId - ID del documento
+     * View a document in browser
+     * @param {number|string} clientId - Client ID
+     * @param {number|string} documentId - Document ID
      * @returns {Promise<void>}
      */
     async viewDocument(clientId, documentId) {
-        try {
-            const response = await api.get(
-                `/clients/${clientId}/documents/${documentId}/view`,
-                { responseType: 'blob' }
-            );
-
-            // Create a blob URL and open in new tab
-            const blob = new Blob([response.data], { type: response.headers['content-type'] });
-            const blobUrl = window.URL.createObjectURL(blob);
-            const newWindow = window.open(blobUrl, '_blank');
-
-            // Clean up blob URL after window loads
-            if (newWindow) {
-                newWindow.onload = () => {
-                    window.URL.revokeObjectURL(blobUrl);
-                };
-            }
-        } catch (error) {
-            console.error('Error viewing document:', error);
-            throw error;
-        }
+        return clientDocumentService.viewDocument(clientId, documentId);
     },
 
     /**
-     * Elimina un documento
-     * @param {number|string} clientId - ID del cliente
-     * @param {number|string} documentId - ID del documento
+     * Delete a document
+     * @param {number|string} clientId - Client ID
+     * @param {number|string} documentId - Document ID
      * @returns {Promise<Object>}
      */
     async deleteDocument(clientId, documentId) {
-        const response = await api.delete(`/clients/${clientId}/documents/${documentId}`);
-        return response.data;
+        return clientDocumentService.deleteDocument(clientId, documentId);
     },
 
-    // ==================== CARTELLE ====================
+    // ==================== FOLDERS ====================
 
     /**
-     * Ottiene la lista delle cartelle di un cliente
-     * @param {number|string} clientId - ID del cliente
-     * @param {number|string|null} parentId - ID della cartella padre (null per root)
+     * Get list of folders
+     * @param {number|string} clientId - Client ID
+     * @param {number|string|null} parentId - Parent folder ID (null for root)
      * @returns {Promise<Object>}
      */
     async getFolders(clientId, parentId = null) {
-        const params = parentId !== null ? { parent_id: parentId } : {};
-        const response = await api.get(`/clients/${clientId}/folders`, { params });
-        return response.data;
+        return clientDocumentService.getFolders(clientId, parentId);
     },
 
     /**
-     * Crea una nuova cartella per un cliente
-     * @param {number|string} clientId - ID del cliente
-     * @param {string} name - Nome della cartella
-     * @param {number|string|null} parentId - ID della cartella padre
+     * Create a new folder
+     * @param {number|string} clientId - Client ID
+     * @param {string} name - Folder name
+     * @param {number|string|null} parentId - Parent folder ID
      * @returns {Promise<Object>}
      */
     async createFolder(clientId, name, parentId = null) {
-        const data = { name };
-
-        if (parentId !== null) {
-            data.parent_folder_id = parentId;
-        }
-
-        const response = await api.post(`/clients/${clientId}/folders`, data);
-        return response.data;
+        return clientDocumentService.createFolder(clientId, name, parentId);
     },
 
     /**
-     * Ottiene i dettagli di una singola cartella
-     * @param {number|string} clientId - ID del cliente
-     * @param {number|string} folderId - ID della cartella
-     * @param {boolean} includeBreadcrumbs - Include il percorso breadcrumb
+     * Get folder details
+     * @param {number|string} clientId - Client ID
+     * @param {number|string} folderId - Folder ID
+     * @param {boolean} includeBreadcrumbs - Include breadcrumb path
      * @returns {Promise<Object>}
      */
     async getFolder(clientId, folderId, includeBreadcrumbs = false) {
-        const params = includeBreadcrumbs ? { include_breadcrumbs: true } : {};
-        const response = await api.get(
-            `/clients/${clientId}/folders/${folderId}`,
-            { params }
-        );
-        return response.data;
+        return clientDocumentService.getFolder(clientId, folderId, includeBreadcrumbs);
     },
 
     /**
-     * Elimina una cartella (e tutto il suo contenuto)
-     * @param {number|string} clientId - ID del cliente
-     * @param {number|string} folderId - ID della cartella
+     * Delete a folder and all contents
+     * @param {number|string} clientId - Client ID
+     * @param {number|string} folderId - Folder ID
      * @returns {Promise<Object>}
      */
     async deleteFolder(clientId, folderId) {
-        const response = await api.delete(`/clients/${clientId}/folders/${folderId}`);
-        return response.data;
+        return clientDocumentService.deleteFolder(clientId, folderId);
     },
 
-    // ==================== UTILITÀ ====================
+    // ==================== UTILITIES ====================
 
     /**
-     * Valida un file prima del caricamento
-     * @param {File} file - File da validare
+     * Validate file before upload
+     * @param {File} file - File to validate
      * @returns {Object} { valid: boolean, error: string|null }
      */
     validateFile(file) {
-        const allowedExtensions = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
-        const maxSizeBytes = 2560 * 1024; // 2.5 MB in bytes
-
-        // Check file size
-        if (file.size > maxSizeBytes) {
-            return {
-                valid: false,
-                error: 'Il file supera il limite di 2.5 MB',
-            };
-        }
-
-        // Check file extension
-        const extension = file.name.split('.').pop().toLowerCase();
-        if (!allowedExtensions.includes(extension)) {
-            return {
-                valid: false,
-                error: 'Tipo di file non supportato. Usa PDF, DOC, DOCX, JPG o PNG',
-            };
-        }
-
-        return { valid: true, error: null };
+        return clientDocumentService.validateFile(file);
     },
 
     /**
-     * Formatta la dimensione del file in formato leggibile
-     * @param {number} bytes - Dimensione in bytes
+     * Format file size for display
+     * @param {number} bytes - Size in bytes
      * @returns {string}
      */
     formatFileSize(bytes) {
-        if (bytes >= 1048576) {
-            return `${(bytes / 1048576).toFixed(2)} MB`;
-        }
-        if (bytes >= 1024) {
-            return `${(bytes / 1024).toFixed(2)} KB`;
-        }
-        return `${bytes} bytes`;
+        return clientDocumentService.formatFileSize(bytes);
     },
 };
 

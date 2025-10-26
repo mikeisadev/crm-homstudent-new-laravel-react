@@ -1,12 +1,18 @@
-import React from 'react';
+import RegistryPage from '../components/registry/RegistryPage';
+import { roomsConfig } from '../config/registryConfigs';
 
+/**
+ * Rooms Page
+ *
+ * Thin wrapper around RegistryPage with rooms configuration
+ * Handles Stanze (Rooms) management with:
+ * - Searchable/paginated list
+ * - Detail view with accordions (Info generali, Caratteristiche, Web, Note)
+ * - Related data tabs (Contratti, Documenti, Foto, Manutenzioni, Dotazioni)
+ * - Create/Edit modal
+ *
+ * @returns {JSX.Element}
+ */
 export default function Rooms() {
-    return (
-        <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">Stanze</h1>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-                <p className="text-gray-600">Modulo Stanze - In costruzione</p>
-            </div>
-        </div>
-    );
+    return <RegistryPage config={roomsConfig} />;
 }

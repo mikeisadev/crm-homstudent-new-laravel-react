@@ -1,12 +1,18 @@
-import React from 'react';
+import RegistryPage from '../components/registry/RegistryPage';
+import { condominiumsConfig } from '../config/registryConfigs';
 
+/**
+ * Condominiums Page
+ *
+ * Thin wrapper around RegistryPage with condominiums configuration
+ * Handles Condomini (Condominiums) management with:
+ * - Searchable/paginated list
+ * - Detail view with accordions (Info generali, Amministratore, Utenze condominiali, Note)
+ * - Related data tabs (Documenti, Foto)
+ * - Create/Edit modal
+ *
+ * @returns {JSX.Element}
+ */
 export default function Condominiums() {
-    return (
-        <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">Condomini</h1>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-                <p className="text-gray-600">Modulo Condomini - In costruzione</p>
-            </div>
-        </div>
-    );
+    return <RegistryPage config={condominiumsConfig} />;
 }

@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasDocuments;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Property extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasDocuments;
 
     protected $fillable = [
         'condominium_id',
