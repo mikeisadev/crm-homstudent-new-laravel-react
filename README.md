@@ -18,7 +18,12 @@ You can find the documented mess of the old project here:
 - "documentation/OLD_PROJECT.md"
 
 Then, I've taken screenshots of UX/UI, design, layout and tabs of the OLD CRM to pass them to AI assistants I use. This to destructure everything into steps and to remake or reorganize the old UI. You can find images here:
-- "documentation/old_project_images/old_crm_clients_tab.png"
+- "documentation/old_entity_registry_tabs/clients_tab.png"
+
+Then tabs can have their modal to add a new entry, and they are stored inside:
+- "documentation/old_entity_registy_tabs/add_new_modals"
+
+Another note: already done tabs or modals are signed with "[OK]_".
 
 # How to understand everything about the development of this project
 During the remake of this project I documented everything: during the development, debugging, restructuring, database redesign, frontend redesign, restructuring layouts, UX, UI, API redesign and everything of this project.
