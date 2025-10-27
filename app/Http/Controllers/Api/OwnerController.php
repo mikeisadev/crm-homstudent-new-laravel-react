@@ -35,6 +35,8 @@ class OwnerController extends Controller
                     'per_page' => $owners->perPage(),
                     'current_page' => $owners->currentPage(),
                     'last_page' => $owners->lastPage(),
+                    'from' => $owners->firstItem(),
+                    'to' => $owners->lastItem(),
                 ],
             ], 'Proprietari recuperati con successo');
         } catch (\Exception $e) {

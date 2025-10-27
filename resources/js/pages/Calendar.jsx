@@ -175,6 +175,8 @@ export default function Calendar() {
                 label: supplier.name,
             }));
 
+            console.log(propertiesRes, propertiesOptions, roomsOptions);
+
             setProperties(propertiesOptions);
             setRooms(roomsOptions);
             setClients(clientsOptions);
@@ -733,7 +735,7 @@ export default function Calendar() {
                 isOpen={modalState.manutenzione}
                 onClose={() => closeModal('manutenzione')}
                 title={editMode ? 'Modifica manutenzione' : 'Inserisci nuova manutenzione'}
-                size="xl"
+                maxWidth="4xl"
             >
                 <form onSubmit={handleMaintenanceSubmit}>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -923,7 +925,7 @@ export default function Calendar() {
                 isOpen={modalState.checkin}
                 onClose={() => closeModal('checkin')}
                 title={editMode ? 'Modifica check-in' : 'Inserisci nuovo check-in'}
-                size="lg"
+                maxWidth="4xl"
             >
                 <form onSubmit={handleCheckinSubmit}>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -997,7 +999,7 @@ export default function Calendar() {
                 isOpen={modalState.checkout}
                 onClose={() => closeModal('checkout')}
                 title={editMode ? 'Modifica check-out' : 'Inserisci nuovo check-out'}
-                size="lg"
+                maxWidth="4xl"
             >
                 <form onSubmit={handleCheckoutSubmit}>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -1073,7 +1075,7 @@ export default function Calendar() {
                 isOpen={modalState.segnalazione}
                 onClose={() => closeModal('segnalazione')}
                 title={editMode ? 'Modifica segnalazione' : 'Inserisci nuova segnalazione'}
-                size="xl"
+                maxWidth="4xl"
             >
                 <form onSubmit={handleReportSubmit}>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

@@ -7,10 +7,10 @@ import { useEffect } from 'react';
  * @param {function} onClose - Callback when modal should close
  * @param {string} title - Modal title
  * @param {ReactNode} children - Modal content
- * @param {string} size - Modal size (sm, md, lg, xl)
+ * @param {string} maxWidth - Modal max width (sm, md, lg, xl, 2xl, 3xl, 4xl, 5xl, 6xl, 7xl, full)
  * @returns {JSX.Element|null}
  */
-export default function Modal({ isOpen, onClose, title, children, size = 'md' }) {
+export default function Modal({ isOpen, onClose, title, children, maxWidth = 'md' }) {
     // Close modal on ESC key press
     useEffect(() => {
         const handleEscape = (e) => {
@@ -39,10 +39,17 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
     if (!isOpen) return null;
 
     const sizeClasses = {
-        sm: 'max-w-md',
-        md: 'max-w-lg',
-        lg: 'max-w-2xl',
-        xl: 'max-w-4xl',
+        sm: 'max-w-sm',
+        md: 'max-w-md',
+        lg: 'max-w-lg',
+        xl: 'max-w-xl',
+        '2xl': 'max-w-2xl',
+        '3xl': 'max-w-3xl',
+        '4xl': 'max-w-4xl',
+        '5xl': 'max-w-5xl',
+        '6xl': 'max-w-6xl',
+        '7xl': 'max-w-7xl',
+        full: 'max-w-full',
     };
 
     return (
@@ -57,7 +64,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
             <div className="flex min-h-full items-center justify-center p-4">
                 {/* Modal content */}
                 <div
-                    className={`relative w-full ${sizeClasses[size]} bg-white rounded-lg shadow-xl transform transition-all`}
+                    className={`relative w-full ${sizeClasses[maxWidth] || sizeClasses.md} bg-white rounded-lg shadow-xl transform transition-all`}
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Header */}

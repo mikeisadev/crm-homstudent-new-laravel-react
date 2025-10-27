@@ -17,7 +17,21 @@ class RoomController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Room::query();
+            $query = Room::with('property');
+
+            // Search functionality
+            if ($request->has('search')) {
+                $search = $request->input('search');
+                $query->where(function($q) use ($search) {
+                    $q->where('internal_code', 'like', "%{$search}%")
+                      ->orWhere('room_type', 'like', "%{$search}%")
+                      ->orWhere('notes', 'like', "%{$search}%")
+                      ->orWhereHas('property', function($q) use ($search) {
+                          $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('address', 'like', "%{$search}%");
+                      });
+                });
+            }
 
             if ($request->has('property_id')) {
                 $query->where('property_id', $request->input('property_id'));
@@ -31,8 +45,8 @@ class RoomController extends Controller
                 $query->where('availability_type', $request->input('availability_type'));
             }
 
-            $query->orderBy('created_at', 'desc');
-            $rooms = $query->paginate(15);
+            $query->orderBy('internal_code', 'asc');
+            $rooms = $query->paginate(50);
 
             return $this->success([
                 'rooms' => RoomResource::collection($rooms->items()),
@@ -41,6 +55,8 @@ class RoomController extends Controller
                     'per_page' => $rooms->perPage(),
                     'current_page' => $rooms->currentPage(),
                     'last_page' => $rooms->lastPage(),
+                    'from' => $rooms->firstItem(),
+                    'to' => $rooms->lastItem(),
                 ],
             ], 'Stanze recuperate con successo');
 
@@ -53,6 +69,7 @@ class RoomController extends Controller
     {
         try {
             $room = Room::create($request->validated());
+            $room->load('property'); // Load property relationship
             return $this->success(new RoomResource($room), 'Stanza creata con successo', 201);
         } catch (\Exception $e) {
             return $this->error('Errore nella creazione della stanza', 500);
@@ -74,7 +91,8 @@ class RoomController extends Controller
         try {
             $room = Room::findOrFail($id);
             $room->update($request->validated());
-            return $this->success(new RoomResource($room->fresh()), 'Stanza aggiornata con successo');
+            $room->load('property'); // Load property relationship
+            return $this->success(new RoomResource($room->fresh(['property'])), 'Stanza aggiornata con successo');
         } catch (\Exception $e) {
             return $this->error('Errore nell\'aggiornamento della stanza', 500);
         }
@@ -88,6 +106,46 @@ class RoomController extends Controller
             return $this->success(null, 'Stanza eliminata con successo');
         } catch (\Exception $e) {
             return $this->error('Errore nell\'eliminazione della stanza', 500);
+        }
+    }
+
+    /**
+     * Get all contracts for a room
+     *
+     * @param Room $room
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function contracts(Room $room)
+    {
+        try {
+            $contracts = $room->contracts()
+                ->with(['client', 'property', 'condominium', 'secondaryClient'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return $this->success($contracts, 'Contratti recuperati con successo');
+        } catch (\Exception $e) {
+            return $this->error('Errore nel recupero dei contratti: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get all proposals for a room
+     *
+     * @param Room $room
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function proposals(Room $room)
+    {
+        try {
+            $proposals = $room->proposals()
+                ->with(['client', 'property'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return $this->success($proposals, 'Proposte recuperate con successo');
+        } catch (\Exception $e) {
+            return $this->error('Errore nel recupero delle proposte: ' . $e->getMessage(), 500);
         }
     }
 }

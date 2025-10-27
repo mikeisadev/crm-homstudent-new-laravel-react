@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import AccordionSection from '../ui/AccordionSection';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
+import Select from '../ui/Select';
 import DatePicker from '../ui/DatePicker';
 import DateUtil from '../../utils/date';
+import api from '../../services/api';
 
 /**
  * Generic Registry Details Component
@@ -38,6 +40,10 @@ export default function RegistryDetails({ config, item, onEdit, onDelete, onUpda
     // Form data per accordion: { accordionKey: {...formData} } - DEPRECATED
     const [sectionData, setSectionData] = useState({});
 
+    // Dynamic options for fields that load from API
+    const [dynamicOptions, setDynamicOptions] = useState({});
+    const [loadingOptions, setLoadingOptions] = useState(false);
+
     // Reset edit modes when item changes
     useEffect(() => {
         setIsGlobalEditMode(false);
@@ -45,6 +51,67 @@ export default function RegistryDetails({ config, item, onEdit, onDelete, onUpda
         setSectionData({});
         setGlobalFormData({});
     }, [item?.id]);
+
+    /**
+     * Load dynamic options when entering edit mode
+     */
+    useEffect(() => {
+        const loadDynamicOptions = async () => {
+            if (!isGlobalEditMode || !config.accordions) return;
+
+            // Find all fields with loadFrom property across all accordions
+            const fieldsToLoad = [];
+            config.accordions.forEach(accordion => {
+                accordion.fields?.forEach(field => {
+                    if (field.loadFrom && field.editable !== false) {
+                        fieldsToLoad.push(field);
+                    }
+                });
+            });
+
+            if (fieldsToLoad.length === 0) return;
+
+            setLoadingOptions(true);
+            const optionsData = {};
+
+            try {
+                const promises = fieldsToLoad.map(async (field) => {
+                    try {
+                        const response = await api.get(field.loadFrom);
+                        const data = response.data.data;
+
+                        // Extract array from response
+                        const dataKey = field.loadFrom.split('/').pop();
+                        const items = data[dataKey] || [];
+
+                        // Transform to react-select format
+                        const options = items.map(item => ({
+                            value: item.id,
+                            label: field.optionLabel
+                                ? (typeof field.optionLabel === 'function'
+                                    ? field.optionLabel(item)
+                                    : item[field.optionLabel])
+                                : item.name || item.internal_code || `Item ${item.id}`
+                        }));
+
+                        optionsData[field.key] = options;
+                    } catch (error) {
+                        console.error(`Error loading options for ${field.key}:`, error);
+                        optionsData[field.key] = [];
+                    }
+                });
+
+                await Promise.all(promises);
+                setDynamicOptions(optionsData);
+            } catch (error) {
+                console.error('Error loading dynamic options:', error);
+            } finally {
+                setLoadingOptions(false);
+            }
+        };
+
+        loadDynamicOptions();
+    }, [isGlobalEditMode, config.accordions]);
 
     /**
      * Get display value for a field
@@ -127,6 +194,11 @@ export default function RegistryDetails({ config, item, onEdit, onDelete, onUpda
         } else {
             // Direct fields on main entity (e.g., type, first_name, email)
             rawValue = item[field.key];
+        }
+
+        // Convert boolean values to string for YES_NO select fields
+        if (field.type === 'select' && typeof rawValue === 'boolean') {
+            rawValue = rawValue ? '1' : '0';
         }
 
         // Return raw value, ensuring it's a string (empty string if null/undefined)
@@ -369,25 +441,31 @@ export default function RegistryDetails({ config, item, onEdit, onDelete, onUpda
                 <div className="font-semibold text-gray-700">{field.label}:</div>
                 <div className="text-gray-600">
                     {actualEditMode ? (
-                        field.type === 'select' && field.options ? (
-                            // SELECT dropdown
-                            <select
-                                value={editValue}
-                                onChange={(e) => {
-                                    if (isGlobalEditMode) {
-                                        handleGlobalFieldChange(field.key, e.target.value);
-                                    } else {
-                                        handleFieldChange(accordionKey, field.key, e.target.value);
-                                    }
-                                }}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                                {field.options.map((option) => (
-                                    <option key={option.value} value={option.value}>
-                                        {option.label}
-                                    </option>
-                                ))}
-                            </select>
+                        field.type === 'select' ? (
+                            // SELECT dropdown - React-Select
+                            (() => {
+                                // Get options: either dynamic (from API) or static (from config)
+                                const isDynamic = field.loadFrom && dynamicOptions[field.key];
+                                const fieldOptions = isDynamic ? dynamicOptions[field.key] : field.options;
+
+                                return (
+                                    <Select
+                                        options={fieldOptions || []}
+                                        value={fieldOptions?.find(opt => opt.value == editValue) || null}
+                                        onChange={(selectedOption) => {
+                                            const newValue = selectedOption?.value || '';
+                                            if (isGlobalEditMode) {
+                                                handleGlobalFieldChange(field.key, newValue);
+                                            } else {
+                                                handleFieldChange(accordionKey, field.key, newValue);
+                                            }
+                                        }}
+                                        placeholder={field.placeholder || 'Seleziona...'}
+                                        isDisabled={loadingOptions}
+                                        isClearable={field.required !== true}
+                                    />
+                                );
+                            })()
                         ) : field.type === 'date' ? (
                             // DATE picker (Flatpickr)
                             <DatePicker

@@ -45,6 +45,8 @@ class ContractController extends Controller
                     'per_page' => $contracts->perPage(),
                     'current_page' => $contracts->currentPage(),
                     'last_page' => $contracts->lastPage(),
+                    'from' => $contracts->firstItem(),
+                    'to' => $contracts->lastItem(),
                 ],
             ], 'Contratti recuperati con successo');
 

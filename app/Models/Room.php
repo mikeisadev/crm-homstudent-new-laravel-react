@@ -79,4 +79,30 @@ class Room extends Model
     {
         return $this->hasMany(Deposit::class);
     }
+
+    /**
+     * Room equipment (many-to-many)
+     * Stores which equipment items this room has
+     */
+    public function equipment()
+    {
+        return $this->belongsToMany(Equipment::class, 'room_equipment', 'room_id', 'equipment_id')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Room photos (one-to-many)
+     */
+    public function photos()
+    {
+        return $this->hasMany(RoomPhoto::class);
+    }
+
+    /**
+     * Maintenances related to this room
+     */
+    public function maintenances()
+    {
+        return $this->hasMany(CalendarMaintenance::class, 'room_id');
+    }
 }

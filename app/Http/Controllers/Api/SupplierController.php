@@ -22,7 +22,14 @@ class SupplierController extends Controller
             $suppliers = $query->orderBy('created_at', 'desc')->paginate(15);
             return $this->success([
                 'suppliers' => SupplierResource::collection($suppliers->items()),
-                'pagination' => ['total' => $suppliers->total(), 'per_page' => $suppliers->perPage(), 'current_page' => $suppliers->currentPage(), 'last_page' => $suppliers->lastPage()],
+                'pagination' => [
+                    'total' => $suppliers->total(),
+                    'per_page' => $suppliers->perPage(),
+                    'current_page' => $suppliers->currentPage(),
+                    'last_page' => $suppliers->lastPage(),
+                    'from' => $suppliers->firstItem(),
+                    'to' => $suppliers->lastItem(),
+                ],
             ], 'Fornitori recuperati con successo');
         } catch (\Exception $e) {
             return $this->error('Errore nel recupero dei fornitori', 500);

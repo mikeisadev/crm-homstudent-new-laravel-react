@@ -37,7 +37,9 @@ export default function ContractsTabRenderer({ entityId, endpoint, rendererProps
             const response = await api.get(endpoint);
 
             // Extract data from API response (using success wrapper)
-            setContracts(response.data.success ? response.data.data : []);
+            const data = response.data.success ? response.data.data : [];
+            // Ensure data is an array (defensive programming)
+            setContracts(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Error fetching contracts:', error);
             setContracts([]);

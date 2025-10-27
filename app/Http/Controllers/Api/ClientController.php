@@ -30,7 +30,25 @@ class ClientController extends Controller
             if ($request->has('search')) {
                 $search = $request->input('search');
                 $query->where(function($q) use ($search) {
-                    $q->where('first_name', 'like', "%{$search}%")
+                    // Check if search contains space (potential full name)
+                    if (strpos($search, ' ') !== false) {
+                        $parts = preg_split('/\s+/', trim($search), 2);
+                        if (count($parts) === 2) {
+                            // Try both first+last and last+first combinations
+                            $q->where(function($q) use ($parts) {
+                                $q->where(function($q) use ($parts) {
+                                    $q->where('first_name', 'like', "%{$parts[0]}%")
+                                      ->where('last_name', 'like', "%{$parts[1]}%");
+                                })->orWhere(function($q) use ($parts) {
+                                    $q->where('first_name', 'like', "%{$parts[1]}%")
+                                      ->where('last_name', 'like', "%{$parts[0]}%");
+                                });
+                            });
+                        }
+                    }
+
+                    // Original individual field searches
+                    $q->orWhere('first_name', 'like', "%{$search}%")
                       ->orWhere('last_name', 'like', "%{$search}%")
                       ->orWhere('company_name', 'like', "%{$search}%")
                       ->orWhere('email', 'like', "%{$search}%")

@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CondominiumController;
 use App\Http\Controllers\Api\CondominiumDocumentController;
 use App\Http\Controllers\Api\ContractController;
 use App\Http\Controllers\Api\DocumentController;
+use App\Http\Controllers\Api\EquipmentController;
 use App\Http\Controllers\Api\FolderController;
 use App\Http\Controllers\Api\OwnerController;
 use App\Http\Controllers\Api\PropertyController;
@@ -14,6 +15,9 @@ use App\Http\Controllers\Api\PropertyDocumentController;
 use App\Http\Controllers\Api\ProposalController;
 use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\RoomDocumentController;
+use App\Http\Controllers\Api\RoomPhotoController;
+use App\Http\Controllers\Api\RoomEquipmentController;
+use App\Http\Controllers\Api\RoomMaintenanceController;
 use App\Http\Controllers\Api\SupplierController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -66,6 +70,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Supplier resources
     Route::apiResource('suppliers', SupplierController::class);
 
+    // Equipment (predefined list for room equipment)
+    Route::get('equipment', [EquipmentController::class, 'index']);
+
     // Condominium resources
     Route::apiResource('condominiums', CondominiumController::class);
 
@@ -96,6 +103,20 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Proposal routes
         Route::get('/proposals', [RoomController::class, 'proposals']);
+
+        // Photo routes
+        Route::get('/photos', [RoomPhotoController::class, 'index']);
+        Route::post('/photos', [RoomPhotoController::class, 'store']);
+        Route::get('/photos/{photo}/view', [RoomPhotoController::class, 'view']);
+        Route::get('/photos/{photo}/thumbnail', [RoomPhotoController::class, 'thumbnail']);
+        Route::delete('/photos/{photo}', [RoomPhotoController::class, 'destroy']);
+
+        // Equipment routes
+        Route::get('/equipment', [RoomEquipmentController::class, 'index']);
+        Route::post('/equipment/sync', [RoomEquipmentController::class, 'sync']);
+
+        // Maintenance routes
+        Route::get('/maintenances', [RoomMaintenanceController::class, 'index']);
     });
 
     // Property resources

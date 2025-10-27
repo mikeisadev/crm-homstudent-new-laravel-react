@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Pagination from '../ui/Pagination';
@@ -36,6 +37,36 @@ export default function RegistryList({
     pagination,
     onPageChange,
 }) {
+    // Ref for search input to maintain focus
+    const searchInputRef = useRef(null);
+    const shouldMaintainFocus = useRef(false);
+    const cursorPosition = useRef(0);
+
+    // Handle input changes and track that we should maintain focus
+    const handleSearchInputChange = (e) => {
+        shouldMaintainFocus.current = true;
+        cursorPosition.current = e.target.selectionStart;
+        onSearchChange(e.target.value);
+    };
+
+    // Handle when user clicks away from search input
+    const handleSearchInputBlur = () => {
+        shouldMaintainFocus.current = false;
+    };
+
+    // Restore focus after items update if user was typing
+    useEffect(() => {
+        if (shouldMaintainFocus.current && searchInputRef.current) {
+            // Use setTimeout to ensure DOM has updated
+            setTimeout(() => {
+                if (searchInputRef.current && shouldMaintainFocus.current) {
+                    searchInputRef.current.focus();
+                    searchInputRef.current.setSelectionRange(cursorPosition.current, cursorPosition.current);
+                }
+            }, 0);
+        }
+    }, [items, loading]);
+
     /**
      * Render filter controls based on configuration
      */
@@ -100,9 +131,11 @@ export default function RegistryList({
                 {/* Search Input */}
                 <div className="mb-4">
                     <Input
+                        ref={searchInputRef}
                         type="text"
                         value={searchTerm}
-                        onChange={(e) => onSearchChange(e.target.value)}
+                        onChange={handleSearchInputChange}
+                        onBlur={handleSearchInputBlur}
                         placeholder={config.list.searchPlaceholder}
                         className="w-full"
                         disabled={loading}
@@ -163,6 +196,8 @@ export default function RegistryList({
                     pagination={pagination}
                     onPageChange={onPageChange}
                     loading={loading}
+                    entityName={config.titleSingular.toLowerCase()}
+                    entityNamePlural={config.title.toLowerCase()}
                 />
             )}
         </div>

@@ -35,6 +35,8 @@ class ProposalController extends Controller
                     'per_page' => $proposals->perPage(),
                     'current_page' => $proposals->currentPage(),
                     'last_page' => $proposals->lastPage(),
+                    'from' => $proposals->firstItem(),
+                    'to' => $proposals->lastItem(),
                 ],
             ], 'Proposte recuperate con successo');
         } catch (\Exception $e) {

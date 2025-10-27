@@ -10,9 +10,11 @@
  * @param {number} pagination.to - Last item number on current page
  * @param {function} onPageChange - Callback when page changes
  * @param {boolean} loading - Whether data is loading
+ * @param {string} entityName - Name of entity (singular) for display text
+ * @param {string} entityNamePlural - Name of entity (plural) for display text
  * @returns {JSX.Element}
  */
-export default function Pagination({ pagination, onPageChange, loading = false }) {
+export default function Pagination({ pagination, onPageChange, loading = false, entityName = 'elemento', entityNamePlural = 'elementi' }) {
     if (!pagination || pagination.last_page <= 1) {
         return null; // Don't show pagination if only 1 page or less
     }
@@ -80,8 +82,8 @@ export default function Pagination({ pagination, onPageChange, loading = false }
             {/* Info: showing X-Y of Z */}
             <div className="flex items-center justify-between mb-2">
                 <div className="text-sm text-gray-600">
-                    Mostrando <span className="font-medium">{from}</span> - <span className="font-medium">{to}</span> di{' '}
-                    <span className="font-medium">{total}</span> {total === 1 ? 'cliente' : 'clienti'}
+                    Mostrando <span className="font-medium">{from || 0}</span> - <span className="font-medium">{to || 0}</span> di{' '}
+                    <span className="font-medium">{total}</span> {total === 1 ? entityName : entityNamePlural}
                 </div>
             </div>
 

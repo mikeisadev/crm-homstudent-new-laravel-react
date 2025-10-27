@@ -21,6 +21,15 @@
 import { COUNTRIES, NATIONALITIES } from '../data/countries';
 import { ITALIAN_PROVINCES } from '../data/italianProvinces';
 import { ITALIAN_CITIES } from '../data/italianCities';
+import {
+    ROOM_TYPES,
+    MINIMUM_STAY_TYPES,
+    YES_NO_OPTIONS,
+    GENDER_PREFERENCES,
+    OCCUPANT_TYPES,
+    FISCAL_RATES,
+    AVAILABILITY_TYPES
+} from '../data/roomConstants';
 
 /**
  * Client (Clienti) Configuration - COMPLETE IMPLEMENTATION
@@ -530,8 +539,11 @@ export const roomsConfig = {
     // List configuration
     list: {
         searchPlaceholder: 'Cerca stanza',
-        getPrimaryText: (item) => item.room_number || `Stanza ${item.id}`,
-        getSecondaryText: (item) => item.room_type_name || item.room_type || '',
+        getPrimaryText: (item) => item.internal_code || `Stanza ${item.id}`,
+        getSecondaryText: (item) => {
+            const roomType = ROOM_TYPES.find(rt => rt.value === item.room_type);
+            return roomType ? roomType.label : item.room_type || '';
+        },
         // No filters for rooms
         filters: []
     },
@@ -546,22 +558,31 @@ export const roomsConfig = {
             fields: [
                 {
                     key: 'internal_code',
-                    label: 'Codice interno',
+                    label: 'Cod. stanza interno',
                     type: 'text',
                     editable: true
                 },
                 {
-                    key: 'property',
+                    key: 'property_id',
                     label: 'Immobile',
-                    type: 'display-only',
-                    displayKey: 'property.name',
-                    getValue: (item) => item.property?.name || item.property?.address || '-'
+                    type: 'select',
+                    editable: true,
+                    loadFrom: '/properties',
+                    optionLabel: (property) => property.internal_code || property.name || property.address || `Immobile ${property.id}`,
+                    placeholder: 'Seleziona un immobile',
+                    getValue: (item) => item.property?.internal_code || item.property?.name || item.property?.address || '-'
                 },
                 {
                     key: 'room_type',
                     label: 'Tipo stanza',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    options: ROOM_TYPES,
+                    placeholder: 'Seleziona tipo',
+                    editable: true,
+                    getValue: (item) => {
+                        const roomType = ROOM_TYPES.find(rt => rt.value === item.room_type);
+                        return roomType ? roomType.label : item.room_type || '-';
+                    }
                 },
                 {
                     key: 'surface_area',
@@ -580,28 +601,46 @@ export const roomsConfig = {
             fields: [
                 {
                     key: 'monthly_price',
-                    label: 'Canone mensile',
+                    label: 'Importo mensile',
                     type: 'number',
                     editable: true,
                     getValue: (item) => item.monthly_price ? `€${parseFloat(item.monthly_price).toFixed(2)}` : '-'
                 },
                 {
                     key: 'weekly_price',
-                    label: 'Prezzo settimanale',
+                    label: 'Importo settimanale',
                     type: 'number',
                     editable: true,
                     getValue: (item) => item.weekly_price ? `€${parseFloat(item.weekly_price).toFixed(2)}` : '-'
                 },
                 {
                     key: 'daily_price',
-                    label: 'Prezzo giornaliero',
+                    label: 'Importo giornaliero',
                     type: 'number',
                     editable: true,
                     getValue: (item) => item.daily_price ? `€${parseFloat(item.daily_price).toFixed(2)}` : '-'
                 },
                 {
+                    key: 'minimum_stay_type',
+                    label: 'Tipo di permanenza minima',
+                    type: 'select',
+                    options: MINIMUM_STAY_TYPES,
+                    placeholder: 'Seleziona tipo',
+                    editable: true,
+                    getValue: (item) => {
+                        const stayType = MINIMUM_STAY_TYPES.find(st => st.value === item.minimum_stay_type);
+                        return stayType ? stayType.label : item.minimum_stay_type || '-';
+                    }
+                },
+                {
+                    key: 'minimum_stay_number',
+                    label: 'Periodo di permanenza minima',
+                    type: 'number',
+                    editable: true
+                },
+                {
                     key: 'deposit_amount',
-                    label: 'Cauzione',
+                    label: 'Caparra (€)',
                     type: 'number',
                     editable: true,
                     getValue: (item) => item.deposit_amount ? `€${parseFloat(item.deposit_amount).toFixed(2)}` : '-'
@@ -614,20 +653,8 @@ export const roomsConfig = {
                     getValue: (item) => item.entry_fee ? `€${parseFloat(item.entry_fee).toFixed(2)}` : '-'
                 },
                 {
-                    key: 'minimum_stay_type',
-                    label: 'Tipo permanenza minima',
-                    type: 'text',
-                    editable: true
-                },
-                {
-                    key: 'minimum_stay_number',
-                    label: 'Numero permanenza minima',
-                    type: 'number',
-                    editable: true
-                },
-                {
                     key: 'cancellation_notice_months',
-                    label: 'Preavviso disdetta (mesi)',
+                    label: 'Mesi di preavviso per la cancellazione',
                     type: 'number',
                     editable: true
                 }
@@ -652,52 +679,64 @@ export const roomsConfig = {
                     editable: true
                 },
                 {
-                    key: 'gender_preference',
-                    label: 'Preferenza genere',
-                    type: 'text',
-                    editable: true
-                },
-                {
-                    key: 'occupant_type',
-                    label: 'Tipo occupante',
-                    type: 'text',
-                    editable: true
-                },
-                {
                     key: 'smoking_allowed',
-                    label: 'Fumatori',
-                    type: 'checkbox',
+                    label: 'Fumare interno',
+                    type: 'select',
+                    options: YES_NO_OPTIONS,
+                    placeholder: 'Seleziona opzione',
                     editable: true,
-                    getValue: (item) => item.smoking_allowed ? 'Sì' : 'No'
+                    getValue: (item) => item.smoking_allowed ? 'Si' : 'No'
                 },
                 {
                     key: 'pets_allowed',
-                    label: 'Animali domestici',
-                    type: 'checkbox',
+                    label: 'Animali',
+                    type: 'select',
+                    options: YES_NO_OPTIONS,
+                    placeholder: 'Seleziona opzione',
                     editable: true,
-                    getValue: (item) => item.pets_allowed ? 'Sì' : 'No'
+                    getValue: (item) => item.pets_allowed ? 'Si' : 'No'
                 },
                 {
                     key: 'musical_instruments_allowed',
-                    label: 'Strumenti musicali',
-                    type: 'checkbox',
+                    label: 'Suonare strumenti',
+                    type: 'select',
+                    options: YES_NO_OPTIONS,
+                    placeholder: 'Seleziona opzione',
                     editable: true,
-                    getValue: (item) => item.musical_instruments_allowed ? 'Sì' : 'No'
-                }
-            ]
-        },
-        {
-            key: 'features',
-            title: 'Caratteristiche',
-            defaultOpen: false,
-            editable: true,
-            fields: [
+                    getValue: (item) => item.musical_instruments_allowed ? 'Si' : 'No'
+                },
+                {
+                    key: 'gender_preference',
+                    label: 'Sesso preferito',
+                    type: 'select',
+                    options: GENDER_PREFERENCES,
+                    placeholder: 'Seleziona',
+                    editable: true,
+                    getValue: (item) => {
+                        const gender = GENDER_PREFERENCES.find(g => g.value === item.gender_preference);
+                        return gender ? gender.label : item.gender_preference || '-';
+                    }
+                },
+                {
+                    key: 'occupant_type',
+                    label: 'Genere accettato',
+                    type: 'select',
+                    options: OCCUPANT_TYPES,
+                    placeholder: 'Seleziona',
+                    editable: true,
+                    getValue: (item) => {
+                        const occType = OCCUPANT_TYPES.find(o => o.value === item.occupant_type);
+                        return occType ? occType.label : item.occupant_type || '-';
+                    }
+                },
                 {
                     key: 'has_double_bed',
-                    label: 'Letto matrimoniale',
-                    type: 'checkbox',
+                    label: 'Coppie nel letto matrimoniale',
+                    type: 'select',
+                    options: YES_NO_OPTIONS,
+                    placeholder: 'Seleziona opzione',
                     editable: true,
-                    getValue: (item) => item.has_double_bed ? 'Sì' : 'No'
+                    getValue: (item) => item.has_double_bed ? 'Si' : 'No'
                 }
             ]
         },
@@ -709,16 +748,21 @@ export const roomsConfig = {
             fields: [
                 {
                     key: 'fiscal_regime',
-                    label: 'Regime fiscale',
+                    label: 'Regime fiscale voluto',
                     type: 'text',
                     editable: true
                 },
                 {
                     key: 'fiscal_rate',
                     label: 'Aliquota fiscale',
-                    type: 'number',
-                    suffix: '%',
-                    editable: true
+                    type: 'select',
+                    options: FISCAL_RATES,
+                    placeholder: 'Seleziona aliquota',
+                    editable: true,
+                    getValue: (item) => {
+                        const rate = FISCAL_RATES.find(r => r.value === String(item.fiscal_rate));
+                        return rate ? rate.label : item.fiscal_rate ? `${item.fiscal_rate}%` : '-';
+                    }
                 }
             ]
         },
@@ -730,16 +774,24 @@ export const roomsConfig = {
             fields: [
                 {
                     key: 'is_published_web',
-                    label: 'Pubblicato sul web',
-                    type: 'checkbox',
+                    label: 'Abilita pubblicazione web',
+                    type: 'select',
+                    options: YES_NO_OPTIONS,
+                    placeholder: 'Seleziona opzione',
                     editable: true,
-                    getValue: (item) => item.is_published_web ? 'Sì' : 'No'
+                    getValue: (item) => item.is_published_web ? 'Si' : 'No'
                 },
                 {
                     key: 'availability_type',
                     label: 'Tipo disponibilità',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    options: AVAILABILITY_TYPES,
+                    placeholder: 'Seleziona tipo disponibilità',
+                    editable: true,
+                    getValue: (item) => {
+                        const avail = AVAILABILITY_TYPES.find(a => a.value === item.availability_type);
+                        return avail ? avail.label : item.availability_type || '-';
+                    }
                 },
                 {
                     key: 'available_from',
@@ -775,13 +827,6 @@ export const roomsConfig = {
             renderer: 'ContractsTabRenderer'
         },
         {
-            key: 'proposals',
-            label: 'Proposte',
-            icon: 'assignment',
-            endpoint: (id) => `/rooms/${id}/proposals`,
-            renderer: 'ProposalsTabRenderer'
-        },
-        {
             key: 'documents',
             label: 'Documenti',
             icon: 'folder',
@@ -789,20 +834,229 @@ export const roomsConfig = {
             renderer: 'DocumentManager',
             hasUpload: true,
             rendererProps: {
+                entityType: 'rooms',
+                apiEndpoint: '/rooms'
+            }
+        },
+        {
+            key: 'photos',
+            label: 'Foto',
+            icon: 'photo',
+            endpoint: (id) => `/rooms/${id}/photos`,
+            renderer: 'PhotosTabRenderer',
+            rendererProps: {
                 entityType: 'room',
                 apiEndpoint: '/rooms'
+            }
+        },
+        {
+            key: 'maintenances',
+            label: 'Manutenzioni',
+            icon: 'build',
+            endpoint: (id) => `/rooms/${id}/maintenances`,
+            renderer: 'MaintenancesTabRenderer'
+        },
+        {
+            key: 'equipment',
+            label: 'Dotazioni',
+            icon: 'inventory_2',
+            endpoint: (id) => `/rooms/${id}/equipment`,
+            renderer: 'EquipmentTabRenderer',
+            rendererProps: {
+                entityType: 'room'
             }
         }
     ],
 
-    // Form configuration (placeholder for now)
+    // Form configuration - Modal fields for "Nuovo" button
     formFields: [
         {
-            key: 'room_number',
-            label: 'Numero stanza',
+            key: 'property_id',
+            label: 'Seleziona immobile',
+            type: 'select',
+            required: true,
+            placeholder: 'Seleziona un immobile',
+            loadFrom: '/properties', // Load properties from API
+            optionLabel: (property) => property.internal_code || property.name || property.address || `Immobile ${property.id}`
+        },
+        {
+            key: 'internal_code',
+            label: 'Cod. interno stanza',
             type: 'text',
             required: true,
             placeholder: 'Es: 100A'
+        },
+        {
+            key: 'surface_area',
+            label: 'Superficie',
+            type: 'number',
+            placeholder: 'Es: 15'
+        },
+        {
+            key: 'room_type',
+            label: 'Tipo stanza',
+            type: 'select',
+            required: true,
+            options: ROOM_TYPES,
+            placeholder: 'Seleziona tipo'
+        },
+        {
+            key: 'monthly_price',
+            label: 'Importo mensile',
+            type: 'number',
+            placeholder: '0',
+            defaultValue: 0
+        },
+        {
+            key: 'weekly_price',
+            label: 'Importo settimanale',
+            type: 'number',
+            placeholder: '0',
+            defaultValue: 0
+        },
+        {
+            key: 'daily_price',
+            label: 'Importo giornaliero',
+            type: 'number',
+            placeholder: '0',
+            defaultValue: 0
+        },
+        {
+            key: 'minimum_stay_type',
+            label: 'Permanenza minima tipo',
+            type: 'select',
+            options: MINIMUM_STAY_TYPES,
+            placeholder: 'Seleziona tipo'
+        },
+        {
+            key: 'minimum_stay_number',
+            label: 'Permanenza minimo numero',
+            type: 'number',
+            placeholder: '0',
+            defaultValue: 0
+        },
+        {
+            key: 'deposit_amount',
+            label: 'Caparra (€)',
+            type: 'number',
+            placeholder: '0',
+            defaultValue: 0
+        },
+        {
+            key: 'entry_fee',
+            label: 'Spese di ingresso',
+            type: 'number',
+            placeholder: '0',
+            defaultValue: 0
+        },
+        {
+            key: 'min_age',
+            label: 'Età minima',
+            type: 'number',
+            placeholder: '0',
+            defaultValue: 0
+        },
+        {
+            key: 'max_age',
+            label: 'Età massima',
+            type: 'number',
+            placeholder: '0',
+            defaultValue: 0
+        },
+        {
+            key: 'smoking_allowed',
+            label: 'Fumare interno',
+            type: 'select',
+            options: YES_NO_OPTIONS,
+            placeholder: 'Seleziona opzione',
+            defaultValue: '0'
+        },
+        {
+            key: 'pets_allowed',
+            label: 'Animali',
+            type: 'select',
+            options: YES_NO_OPTIONS,
+            placeholder: 'Seleziona opzione',
+            defaultValue: '0'
+        },
+        {
+            key: 'musical_instruments_allowed',
+            label: 'Suonare strumenti',
+            type: 'select',
+            options: YES_NO_OPTIONS,
+            placeholder: 'Seleziona opzione',
+            defaultValue: '0'
+        },
+        {
+            key: 'gender_preference',
+            label: 'Sesso preferito',
+            type: 'select',
+            options: GENDER_PREFERENCES,
+            placeholder: 'Seleziona'
+        },
+        {
+            key: 'occupant_type',
+            label: 'Genere accettato',
+            type: 'select',
+            options: OCCUPANT_TYPES,
+            placeholder: 'Seleziona'
+        },
+        {
+            key: 'has_double_bed',
+            label: 'Coppie nel letto matrimoniale',
+            type: 'select',
+            options: YES_NO_OPTIONS,
+            placeholder: 'Seleziona opzione',
+            defaultValue: '0'
+        },
+        {
+            key: 'cancellation_notice_months',
+            label: 'Mesi preavviso per cancellazione',
+            type: 'number',
+            placeholder: '0',
+            defaultValue: 0
+        },
+        {
+            key: 'fiscal_regime',
+            label: 'Regime fiscale voluto',
+            type: 'text',
+            placeholder: 'Es: Cedolare secca'
+        },
+        {
+            key: 'fiscal_rate',
+            label: 'Aliquota fiscale',
+            type: 'select',
+            options: FISCAL_RATES,
+            placeholder: 'Seleziona aliquota'
+        },
+        {
+            key: 'is_published_web',
+            label: 'Abilita pubblicazione web',
+            type: 'select',
+            options: YES_NO_OPTIONS,
+            placeholder: 'Seleziona opzione',
+            defaultValue: '0'
+        },
+        {
+            key: 'availability_type',
+            label: 'Tipo disponibilità',
+            type: 'select',
+            options: AVAILABILITY_TYPES,
+            placeholder: 'Seleziona tipo disponibilità',
+            required: false,
+            // defaultValue: 'auto_from_contracts'
+        },
+        {
+            key: 'available_from',
+            label: 'Disponibile dal',
+            type: 'date',
+            placeholder: 'gg/mm/aaaa'
+        },
+        {
+            key: 'notes',
+            label: 'Note',
+            type: 'textarea',
+            placeholder: 'Inserisci note o informazioni aggiuntive sulla stanza...'
         }
     ]
 };

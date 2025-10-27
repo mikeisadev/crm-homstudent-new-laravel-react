@@ -50,6 +50,8 @@ class PropertyController extends Controller
                     'per_page' => $properties->perPage(),
                     'current_page' => $properties->currentPage(),
                     'last_page' => $properties->lastPage(),
+                    'from' => $properties->firstItem(),
+                    'to' => $properties->lastItem(),
                 ],
             ], 'Propriet\u00e0 recuperate con successo');
 
@@ -97,6 +99,46 @@ class PropertyController extends Controller
             return $this->success(null, 'Propriet\u00e0 eliminata con successo');
         } catch (\Exception $e) {
             return $this->error('Errore nell\'eliminazione della propriet\u00e0', 500);
+        }
+    }
+
+    /**
+     * Get all contracts for a property
+     *
+     * @param Property $property
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function contracts(Property $property)
+    {
+        try {
+            $contracts = $property->contracts()
+                ->with(['client', 'room', 'condominium', 'secondaryClient'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return $this->success($contracts, 'Contratti recuperati con successo');
+        } catch (\Exception $e) {
+            return $this->error('Errore nel recupero dei contratti: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get all proposals for a property
+     *
+     * @param Property $property
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function proposals(Property $property)
+    {
+        try {
+            $proposals = $property->proposals()
+                ->with(['client', 'room'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return $this->success($proposals, 'Proposte recuperate con successo');
+        } catch (\Exception $e) {
+            return $this->error('Errore nel recupero delle proposte: ' . $e->getMessage(), 500);
         }
     }
 }

@@ -23,7 +23,14 @@ class CondominiumController extends Controller
             $condominiums = $query->orderBy('created_at', 'desc')->paginate(15);
             return $this->success([
                 'condominiums' => CondominiumResource::collection($condominiums->items()),
-                'pagination' => ['total' => $condominiums->total(), 'per_page' => $condominiums->perPage(), 'current_page' => $condominiums->currentPage(), 'last_page' => $condominiums->lastPage()],
+                'pagination' => [
+                    'total' => $condominiums->total(),
+                    'per_page' => $condominiums->perPage(),
+                    'current_page' => $condominiums->currentPage(),
+                    'last_page' => $condominiums->lastPage(),
+                    'from' => $condominiums->firstItem(),
+                    'to' => $condominiums->lastItem(),
+                ],
             ], 'Condomini recuperati con successo');
         } catch (\Exception $e) {
             return $this->error('Errore nel recupero dei condomini', 500);
