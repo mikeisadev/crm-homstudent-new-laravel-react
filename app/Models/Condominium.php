@@ -53,4 +53,14 @@ class Condominium extends Model
     {
         return $this->hasMany(Contract::class);
     }
+
+    /**
+     * Get condominium photos
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function photos()
+    {
+        return $this->hasMany(CondominiumPhoto::class);
+    }
 }

@@ -106,6 +106,11 @@ class Property extends Model
         return $this->hasMany(Contract::class);
     }
 
+    public function managementContracts()
+    {
+        return $this->hasMany(ManagementContract::class);
+    }
+
     public function invoices()
     {
         return $this->hasMany(Invoice::class);
@@ -114,5 +119,79 @@ class Property extends Model
     public function deposits()
     {
         return $this->hasMany(Deposit::class);
+    }
+
+    public function penalties()
+    {
+        return $this->hasMany(Penalty::class);
+    }
+
+    /**
+     * Get property photos
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function photos()
+    {
+        return $this->hasMany(PropertyPhoto::class);
+    }
+
+    /**
+     * Get property equipment (many-to-many)
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function equipment()
+    {
+        return $this->belongsToMany(Equipment::class, 'property_equipment', 'property_id', 'equipment_id')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get property maintenances
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function maintenances()
+    {
+        return $this->hasMany(CalendarMaintenance::class, 'property_id');
+    }
+
+    /**
+     * Get property meta entries
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function meta()
+    {
+        return $this->hasMany(PropertyMeta::class);
+    }
+
+    /**
+     * Helper method to get a meta value by key
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    public function getMeta($key, $default = null)
+    {
+        $meta = $this->meta()->where('meta_key', $key)->first();
+        return $meta ? $meta->meta_value : $default;
+    }
+
+    /**
+     * Helper method to set a meta value
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return PropertyMeta
+     */
+    public function setMeta($key, $value)
+    {
+        return $this->meta()->updateOrCreate(
+            ['meta_key' => $key],
+            ['meta_value' => $value]
+        );
     }
 }

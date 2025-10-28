@@ -30,6 +30,19 @@ import {
     FISCAL_RATES,
     AVAILABILITY_TYPES
 } from '../data/roomConstants';
+import {
+    PROPERTY_TYPES,
+    INTENDED_USE_TYPES,
+    LAYOUT_TYPES,
+    PROPERTY_STATUS_TYPES,
+    PROPERTY_CONDITION_TYPES,
+    ENERGY_CERTIFICATES,
+    HEATING_TYPES,
+    COOLING_TYPES,
+    HOT_WATER_TYPES,
+    MANAGEMENT_TYPES,
+    PROPERTY_EQUIPMENT
+} from '../data/propertyConstants';
 
 /**
  * Client (Clienti) Configuration - COMPLETE IMPLEMENTATION
@@ -1115,14 +1128,19 @@ export const propertiesConfig = {
                 {
                     key: 'property_type',
                     label: 'Tipo immobile',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    editable: true,
+                    options: PROPERTY_TYPES,
+                    placeholder: 'Seleziona tipo immobile'
                 },
                 {
-                    key: 'condominium',
+                    key: 'condominium_id',
                     label: 'Condominio',
-                    type: 'display-only',
-                    displayKey: 'condominium.name',
+                    type: 'select',
+                    editable: true,
+                    loadFrom: '/condominiums',
+                    optionLabel: (condominium) => condominium.name || `Condominio ${condominium.id}`,
+                    placeholder: 'Seleziona un condominio',
                     getValue: (item) => item.condominium?.name || '-'
                 },
                 {
@@ -1140,14 +1158,19 @@ export const propertiesConfig = {
                 {
                     key: 'city',
                     label: 'Comune',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    editable: true,
+                    options: ITALIAN_CITIES,
+                    placeholder: 'Seleziona comune',
+                    searchable: true
                 },
                 {
                     key: 'province',
                     label: 'Provincia',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    editable: true,
+                    options: ITALIAN_PROVINCES,
+                    placeholder: 'Seleziona provincia'
                 },
                 {
                     key: 'postal_code',
@@ -1158,8 +1181,10 @@ export const propertiesConfig = {
                 {
                     key: 'country',
                     label: 'Stato',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    editable: true,
+                    options: COUNTRIES,
+                    placeholder: 'Seleziona stato'
                 },
                 {
                     key: 'zone',
@@ -1170,8 +1195,10 @@ export const propertiesConfig = {
                 {
                     key: 'intended_use',
                     label: 'Destinazione d\'uso',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    editable: true,
+                    options: INTENDED_USE_TYPES,
+                    placeholder: 'Seleziona destinazione d\'uso'
                 }
             ]
         },
@@ -1184,8 +1211,10 @@ export const propertiesConfig = {
                 {
                     key: 'layout',
                     label: 'Planimetria',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    editable: true,
+                    options: LAYOUT_TYPES,
+                    placeholder: 'Seleziona planimetria'
                 },
                 {
                     key: 'surface_area',
@@ -1197,8 +1226,10 @@ export const propertiesConfig = {
                 {
                     key: 'property_status',
                     label: 'Stato immobile',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    editable: true,
+                    options: PROPERTY_STATUS_TYPES,
+                    placeholder: 'Seleziona stato immobile'
                 },
                 {
                     key: 'floor_number',
@@ -1221,8 +1252,10 @@ export const propertiesConfig = {
                 {
                     key: 'condition',
                     label: 'Condizioni',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    editable: true,
+                    options: PROPERTY_CONDITION_TYPES,
+                    placeholder: 'Seleziona condizioni'
                 },
                 {
                     key: 'bathrooms_with_tub',
@@ -1324,8 +1357,10 @@ export const propertiesConfig = {
                 {
                     key: 'energy_certificate',
                     label: 'Certificato energetico',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    editable: true,
+                    options: ENERGY_CERTIFICATES,
+                    placeholder: 'Seleziona certificato energetico'
                 }
             ]
         },
@@ -1338,20 +1373,26 @@ export const propertiesConfig = {
                 {
                     key: 'heating_type',
                     label: 'Tipo riscaldamento',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    editable: true,
+                    options: HEATING_TYPES,
+                    placeholder: 'Seleziona tipo riscaldamento'
                 },
                 {
                     key: 'cooling_type',
                     label: 'Tipo raffreddamento',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    editable: true,
+                    options: COOLING_TYPES,
+                    placeholder: 'Seleziona tipo raffreddamento'
                 },
                 {
                     key: 'hot_water_type',
                     label: 'Tipo acqua calda',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    editable: true,
+                    options: HOT_WATER_TYPES,
+                    placeholder: 'Seleziona tipo acqua calda'
                 },
                 {
                     key: 'cold_water_meter',
@@ -1435,11 +1476,11 @@ export const propertiesConfig = {
             renderer: 'ContractsTabRenderer'
         },
         {
-            key: 'proposals',
-            label: 'Proposte',
-            icon: 'assignment',
-            endpoint: (id) => `/properties/${id}/proposals`,
-            renderer: 'ProposalsTabRenderer'
+            key: 'management_contracts',
+            label: 'Contratti di gestione',
+            icon: 'business_center',
+            endpoint: (id) => `/properties/${id}/management-contracts`,
+            renderer: 'ManagementContractsTabRenderer'
         },
         {
             key: 'documents',
@@ -1452,17 +1493,185 @@ export const propertiesConfig = {
                 entityType: 'property',
                 apiEndpoint: '/properties'
             }
+        },
+        {
+            key: 'photos',
+            label: 'Foto',
+            icon: 'photo',
+            endpoint: (id) => `/properties/${id}/photos`,
+            renderer: 'PhotosTabRenderer',
+            rendererProps: {
+                entityType: 'property',
+                apiEndpoint: '/properties'
+            }
+        },
+        {
+            key: 'maintenances',
+            label: 'Manutenzioni',
+            icon: 'build',
+            endpoint: (id) => `/properties/${id}/maintenances`,
+            renderer: 'MaintenancesTabRenderer'
+        },
+        {
+            key: 'penalties',
+            label: 'Sanzioni',
+            icon: 'gavel',
+            endpoint: (id) => `/properties/${id}/penalties`,
+            renderer: 'PenaltiesTabRenderer'
+        },
+        {
+            key: 'invoices',
+            label: 'Bollette',
+            icon: 'receipt',
+            endpoint: (id) => `/properties/${id}/invoices`,
+            renderer: 'InvoicesTabRenderer'
+        },
+        {
+            key: 'equipment',
+            label: 'Dotazioni',
+            icon: 'inventory_2',
+            endpoint: (id) => `/properties/${id}/equipment`,
+            renderer: 'EquipmentTabRenderer',
+            rendererProps: {
+                entityType: 'property'
+            }
+        },
+        {
+            key: 'owners',
+            label: 'Proprietari',
+            icon: 'person',
+            endpoint: (id) => `/properties/${id}/owners`,
+            renderer: 'OwnersTabRenderer'
         }
     ],
 
-    // Form configuration (placeholder for now)
+    // Form configuration - Complete form for "Nuovo Immobile" modal
     formFields: [
+        // Row 1: Condominium, Name, Internal Code
+        {
+            key: 'condominium_id',
+            label: 'Seleziona condominio',
+            type: 'select',
+            required: false,
+            placeholder: '-- Seleziona un condominio --',
+            loadFrom: '/condominiums',
+            optionLabel: (condominium) => condominium.name || `Condominio ${condominium.id}`
+        },
+        {
+            key: 'name',
+            label: 'Nome immobile',
+            type: 'text',
+            required: true,
+            placeholder: 'Es: Appartamento Centro'
+        },
         {
             key: 'internal_code',
-            label: 'Codice immobile',
+            label: 'Codice interno immobile',
             type: 'text',
             required: true,
             placeholder: 'Es: APP 100'
+        },
+
+        // Row 2: Property Type, Address, Portal Address
+        {
+            key: 'property_type',
+            label: 'Tipologia immobile',
+            type: 'select',
+            required: true,
+            options: PROPERTY_TYPES,
+            placeholder: '-- Seleziona tipologia --'
+        },
+        {
+            key: 'address',
+            label: 'Indirizzo reale',
+            type: 'text',
+            required: true,
+            placeholder: 'Es: Via Roma 123'
+        },
+        {
+            key: 'portal_address',
+            label: 'Indirizzo portale',
+            type: 'text',
+            required: false,
+            placeholder: 'Es: Via Roma (indirizzo per portali)'
+        },
+
+        // Row 3: Postal Code, City, Province
+        {
+            key: 'postal_code',
+            label: 'CAP',
+            type: 'text',
+            required: true,
+            placeholder: 'Es: 35100'
+        },
+        {
+            key: 'city',
+            label: 'Comune',
+            type: 'select',
+            required: true,
+            options: ITALIAN_CITIES,
+            placeholder: '-- Seleziona comune --',
+            searchable: true
+        },
+        {
+            key: 'province',
+            label: 'Provincia',
+            type: 'select',
+            required: true,
+            options: ITALIAN_PROVINCES,
+            placeholder: '-- Seleziona provincia --'
+        },
+
+        // Row 4: Country, Zone, Intended Use
+        {
+            key: 'country',
+            label: 'Stato',
+            type: 'select',
+            required: false,
+            options: COUNTRIES,
+            placeholder: '-- Seleziona stato --',
+            defaultValue: 'Italia'
+        },
+        {
+            key: 'zone',
+            label: 'Zona',
+            type: 'text',
+            required: false,
+            placeholder: 'Es: Centro storico'
+        },
+        {
+            key: 'intended_use',
+            label: "Destinazione d'uso",
+            type: 'select',
+            required: true,
+            options: INTENDED_USE_TYPES,
+            placeholder: '-- Seleziona destinazione --'
+        },
+
+        // Row 5: Surface Area, Floor Number (optional but useful)
+        {
+            key: 'surface_area',
+            label: 'Superficie (m²)',
+            type: 'number',
+            required: false,
+            placeholder: 'Es: 85'
+        },
+        {
+            key: 'floor_number',
+            label: 'Piano',
+            type: 'number',
+            required: false,
+            placeholder: 'Es: 2'
+        },
+
+        // Row 6: Notes (full width)
+        {
+            key: 'notes',
+            label: 'Note',
+            type: 'textarea',
+            required: false,
+            placeholder: 'Note aggiuntive sull\'immobile...',
+            rows: 3
         }
     ]
 };
@@ -1527,14 +1736,19 @@ export const condominiumsConfig = {
                 {
                     key: 'city',
                     label: 'Comune',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    editable: true,
+                    options: ITALIAN_CITIES,
+                    placeholder: 'Seleziona comune',
+                    searchable: true
                 },
                 {
                     key: 'province',
                     label: 'Provincia',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    editable: true,
+                    options: ITALIAN_PROVINCES,
+                    placeholder: 'Seleziona provincia'
                 },
                 {
                     key: 'postal_code',
@@ -1545,8 +1759,10 @@ export const condominiumsConfig = {
                 {
                     key: 'country',
                     label: 'Nazione',
-                    type: 'text',
-                    editable: true
+                    type: 'select',
+                    editable: true,
+                    options: COUNTRIES,
+                    placeholder: 'Seleziona stato'
                 },
                 {
                     key: 'construction_year',
@@ -1673,17 +1889,171 @@ export const condominiumsConfig = {
                 entityType: 'condominium',
                 apiEndpoint: '/condominiums'
             }
+        },
+        {
+            key: 'photos',
+            label: 'Foto',
+            icon: 'photo',
+            endpoint: (id) => `/condominiums/${id}/photos`,
+            renderer: 'PhotosTabRenderer',
+            rendererProps: {
+                entityType: 'condominium',
+                apiEndpoint: '/condominiums'
+            }
         }
     ],
 
-    // Form configuration (placeholder for now)
+    // Form configuration - Complete form for "Nuovo Condominio" modal
     formFields: [
+        // Row 1: Nome, Codice Fiscale, Indirizzo, Comune
         {
             key: 'name',
             label: 'Nome condominio',
             type: 'text',
             required: true,
             placeholder: 'Es: Condominio Torre Belvedere'
+        },
+        {
+            key: 'tax_code',
+            label: 'Codice Fiscale',
+            type: 'text',
+            required: false,
+            placeholder: 'Es: 12345678901'
+        },
+        {
+            key: 'address',
+            label: 'Indirizzo',
+            type: 'text',
+            required: true,
+            placeholder: 'Es: Via Roma 123'
+        },
+        {
+            key: 'city',
+            label: 'Comune',
+            type: 'select',
+            required: true,
+            options: ITALIAN_CITIES,
+            placeholder: '-- Seleziona comune --',
+            searchable: true
+        },
+
+        // Row 2: Cap, Provincia, Stato, Anno costituzione
+        {
+            key: 'postal_code',
+            label: 'Cap',
+            type: 'text',
+            required: true,
+            placeholder: 'Es: 35100'
+        },
+        {
+            key: 'province',
+            label: 'Provincia',
+            type: 'select',
+            required: false,
+            options: ITALIAN_PROVINCES,
+            placeholder: '-- Seleziona provincia --'
+        },
+        {
+            key: 'country',
+            label: 'Stato',
+            type: 'select',
+            required: false,
+            options: COUNTRIES,
+            placeholder: '-- Seleziona stato --',
+            defaultValue: 'Italia'
+        },
+        {
+            key: 'construction_year',
+            label: 'Anno costituzione',
+            type: 'number',
+            required: false,
+            placeholder: 'Es: 1985'
+        },
+
+        // Row 3: Nome amministratore, Telefono, Cellulare, Numero Verde
+        {
+            key: 'administrator_name',
+            label: 'Nome amministratore',
+            type: 'text',
+            required: false,
+            placeholder: 'Es: Mario Rossi'
+        },
+        {
+            key: 'administrator_phone',
+            label: 'Telefono amministratore',
+            type: 'tel',
+            required: false,
+            placeholder: 'Es: 0498765432'
+        },
+        {
+            key: 'administrator_mobile',
+            label: 'Cellulare amministratore',
+            type: 'tel',
+            required: false,
+            placeholder: 'Es: 3331234567'
+        },
+        {
+            key: 'administrator_toll_free',
+            label: 'Numero Verde',
+            type: 'tel',
+            required: false,
+            placeholder: 'Es: 800123456'
+        },
+
+        // Row 4: Email, PEC, Contatori acqua, Contatori elettricità
+        {
+            key: 'administrator_email',
+            label: 'Email amministratore',
+            type: 'email',
+            required: false,
+            placeholder: 'Es: admin@condominio.it'
+        },
+        {
+            key: 'administrator_pec',
+            label: 'Pec amministratore',
+            type: 'email',
+            required: false,
+            placeholder: 'Es: pec@condominio.it'
+        },
+        {
+            key: 'water_meters_info',
+            label: 'Contatori acqua',
+            type: 'text',
+            required: false,
+            placeholder: 'Informazioni contatori acqua'
+        },
+        {
+            key: 'electricity_meters_info',
+            label: 'Contatori elettricità',
+            type: 'text',
+            required: false,
+            placeholder: 'Informazioni contatori elettricità'
+        },
+
+        // Row 5: Contatori gas, Centrale termica
+        {
+            key: 'gas_meters_info',
+            label: 'Contatori gas',
+            type: 'text',
+            required: false,
+            placeholder: 'Informazioni contatori gas'
+        },
+        {
+            key: 'heating_system_info',
+            label: 'Centrale termica',
+            type: 'text',
+            required: false,
+            placeholder: 'Informazioni centrale termica'
+        },
+
+        // Notes (full width if needed)
+        {
+            key: 'notes',
+            label: 'Note',
+            type: 'textarea',
+            required: false,
+            placeholder: 'Note aggiuntive sul condominio...',
+            rows: 3
         }
     ]
 };

@@ -11,6 +11,10 @@ import DocumentManager from './DocumentManager';
 import PhotosTabRenderer from './PhotosTabRenderer';
 import MaintenancesTabRenderer from './MaintenancesTabRenderer';
 import EquipmentTabRenderer from './EquipmentTabRenderer';
+import OwnersTabRenderer from './OwnersTabRenderer';
+import PenaltiesTabRenderer from './PenaltiesTabRenderer';
+import InvoicesTabRenderer from './InvoicesTabRenderer';
+import ManagementContractsTabRenderer from './ManagementContractsTabRenderer';
 
 // Export individual renderers
 export {
@@ -19,7 +23,11 @@ export {
     DocumentManager,
     PhotosTabRenderer,
     MaintenancesTabRenderer,
-    EquipmentTabRenderer
+    EquipmentTabRenderer,
+    OwnersTabRenderer,
+    PenaltiesTabRenderer,
+    InvoicesTabRenderer,
+    ManagementContractsTabRenderer
 };
 
 // Export registry map for dynamic loading
@@ -29,7 +37,11 @@ export const RENDERER_MAP = {
     DocumentManager,
     PhotosTabRenderer,
     MaintenancesTabRenderer,
-    EquipmentTabRenderer
+    EquipmentTabRenderer,
+    OwnersTabRenderer,
+    PenaltiesTabRenderer,
+    InvoicesTabRenderer,
+    ManagementContractsTabRenderer
 };
 
 export default RENDERER_MAP;

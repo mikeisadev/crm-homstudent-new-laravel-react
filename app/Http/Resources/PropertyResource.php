@@ -14,6 +14,14 @@ class PropertyResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // Format meta data as key-value object
+        $metaData = [];
+        if ($this->relationLoaded('meta')) {
+            foreach ($this->meta as $meta) {
+                $metaData[$meta->meta_key] = $meta->meta_value;
+            }
+        }
+
         return [
             'id' => $this->id,
             'condominium_id' => $this->condominium_id,
@@ -45,6 +53,9 @@ class PropertyResource extends JsonResource
             'notes' => $this->notes,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
+
+            // Formatted meta data as object
+            'meta_data' => $metaData,
 
             // Relationships
             'condominium' => CondominiumResource::make($this->whenLoaded('condominium')),

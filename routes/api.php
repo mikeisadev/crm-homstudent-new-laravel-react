@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CalendarController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\CondominiumController;
 use App\Http\Controllers\Api\CondominiumDocumentController;
+use App\Http\Controllers\Api\CondominiumPhotoController;
 use App\Http\Controllers\Api\ContractController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\EquipmentController;
@@ -12,6 +13,8 @@ use App\Http\Controllers\Api\FolderController;
 use App\Http\Controllers\Api\OwnerController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\PropertyDocumentController;
+use App\Http\Controllers\Api\PropertyPhotoController;
+use App\Http\Controllers\Api\PropertyEquipmentController;
 use App\Http\Controllers\Api\ProposalController;
 use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\RoomDocumentController;
@@ -143,6 +146,32 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Proposal routes
         Route::get('/proposals', [PropertyController::class, 'proposals']);
+
+        // Owners routes
+        Route::get('/owners', [PropertyController::class, 'owners']);
+
+        // Photo routes
+        Route::get('/photos', [PropertyPhotoController::class, 'index']);
+        Route::post('/photos', [PropertyPhotoController::class, 'store']);
+        Route::get('/photos/{photo}/view', [PropertyPhotoController::class, 'view']);
+        Route::get('/photos/{photo}/thumbnail', [PropertyPhotoController::class, 'thumbnail']);
+        Route::delete('/photos/{photo}', [PropertyPhotoController::class, 'destroy']);
+
+        // Equipment routes
+        Route::get('/equipment', [PropertyEquipmentController::class, 'index']);
+        Route::post('/equipment/sync', [PropertyEquipmentController::class, 'sync']);
+
+        // Maintenance routes
+        Route::get('/maintenances', [PropertyController::class, 'maintenances']);
+
+        // Penalty routes
+        Route::get('/penalties', [PropertyController::class, 'penalties']);
+
+        // Invoice routes
+        Route::get('/invoices', [PropertyController::class, 'invoices']);
+
+        // Management Contract routes
+        Route::get('/management-contracts', [PropertyController::class, 'managementContracts']);
     });
 
     // Condominium resources
@@ -163,6 +192,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/folders', [CondominiumDocumentController::class, 'storeFolder']);
         Route::get('/folders/{folder}', [CondominiumDocumentController::class, 'showFolder']);
         Route::delete('/folders/{folder}', [CondominiumDocumentController::class, 'destroyFolder']);
+
+        // Photo routes
+        Route::get('/photos', [CondominiumPhotoController::class, 'index']);
+        Route::post('/photos', [CondominiumPhotoController::class, 'store']);
+        Route::get('/photos/{photo}/view', [CondominiumPhotoController::class, 'view']);
+        Route::get('/photos/{photo}/thumbnail', [CondominiumPhotoController::class, 'thumbnail']);
+        Route::delete('/photos/{photo}', [CondominiumPhotoController::class, 'destroy']);
     });
 
     // Proposal resources

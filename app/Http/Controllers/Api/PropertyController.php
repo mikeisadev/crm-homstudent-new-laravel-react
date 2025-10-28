@@ -77,7 +77,7 @@ class PropertyController extends Controller
     public function show(int $id)
     {
         try {
-            $property = Property::with(['condominium', 'rooms', 'owners'])->findOrFail($id);
+            $property = Property::with(['condominium', 'rooms', 'owners', 'meta'])->findOrFail($id);
             return $this->success(new PropertyResource($property), 'Propriet\u00e0 recuperata con successo');
         } catch (\Exception $e) {
             return $this->error('Proprietà non trovata', 404);
@@ -143,6 +143,101 @@ class PropertyController extends Controller
             return $this->success($proposals, 'Proposte recuperate con successo');
         } catch (\Exception $e) {
             return $this->error('Errore nel recupero delle proposte: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get all owners for a property
+     *
+     * @param Property $property
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function owners(Property $property)
+    {
+        try {
+            $owners = $property->owners()
+                ->orderBy('first_name')
+                ->get();
+
+            return $this->success($owners, 'Proprietari recuperati con successo');
+        } catch (\Exception $e) {
+            return $this->error('Errore nel recupero dei proprietari: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get all maintenances for a property
+     *
+     * @param Property $property
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function maintenances(Property $property)
+    {
+        try {
+            $maintenances = $property->maintenances()
+                ->orderBy('start_date', 'desc')
+                ->get();
+
+            return $this->success($maintenances, 'Manutenzioni recuperate con successo');
+        } catch (\Exception $e) {
+            return $this->error('Errore nel recupero delle manutenzioni: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get all penalties for a property
+     *
+     * @param Property $property
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function penalties(Property $property)
+    {
+        try {
+            $penalties = $property->penalties()
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return $this->success($penalties, 'Sanzioni recuperate con successo');
+        } catch (\Exception $e) {
+            return $this->error('Errore nel recupero delle sanzioni: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get all invoices for a property
+     *
+     * @param Property $property
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function invoices(Property $property)
+    {
+        try {
+            $invoices = $property->invoices()
+                ->orderBy('date', 'desc')
+                ->get();
+
+            return $this->success($invoices, 'Bollette recuperate con successo');
+        } catch (\Exception $e) {
+            return $this->error('Errore nel recupero delle bollette: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get all management contracts for a property
+     *
+     * @param Property $property
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function managementContracts(Property $property)
+    {
+        try {
+            $managementContracts = $property->managementContracts()
+                ->orderBy('start_date', 'desc')
+                ->get();
+
+            return $this->success($managementContracts, 'Contratti di gestione recuperati con successo');
+        } catch (\Exception $e) {
+            return $this->error('Errore nel recupero dei contratti di gestione: ' . $e->getMessage(), 500);
         }
     }
 }

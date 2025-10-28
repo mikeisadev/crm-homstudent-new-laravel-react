@@ -4,10 +4,14 @@ import Button from '../../ui/Button';
 
 /**
  * Equipment Tab Renderer
- * Multi-select interface for room equipment
- * Equipment items are predefined in the database
+ * Multi-select interface for room/property equipment
+ * Equipment items are predefined in the database and filtered by entity type
  */
-const EquipmentTabRenderer = ({ entityId, entityType = 'room' }) => {
+const EquipmentTabRenderer = ({ entityId, entityType, rendererProps = {} }) => {
+    // Support both direct props and rendererProps pattern
+    const type = entityType || rendererProps.entityType;
+    const entityPlural = type === 'room' ? 'rooms' : 'properties';
+
     const [allEquipment, setAllEquipment] = useState([]);
     const [selectedEquipment, setSelectedEquipment] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -17,21 +21,21 @@ const EquipmentTabRenderer = ({ entityId, entityType = 'room' }) => {
 
     useEffect(() => {
         fetchData();
-    }, [entityId]);
+    }, [entityId, type]);
 
     const fetchData = async () => {
         try {
             setLoading(true);
 
-            // Fetch all available equipment items
-            // IMPORTANT: Using per_page=9999 to get ALL equipment for selection
-            const equipmentResponse = await api.get('/equipment?per_page=9999');
+            // Fetch all available equipment items filtered by entity type
+            // IMPORTANT: Using for_entity parameter to get only relevant equipment
+            const equipmentResponse = await api.get(`/equipment?for_entity=${type}`);
 
-            // Fetch room's current equipment
-            const roomEquipmentResponse = await api.get(`/rooms/${entityId}/equipment`);
+            // Fetch entity's current equipment
+            const entityEquipmentResponse = await api.get(`/${entityPlural}/${entityId}/equipment`);
 
             setAllEquipment(equipmentResponse.data.data || []);
-            setSelectedEquipment(roomEquipmentResponse.data.data || []);
+            setSelectedEquipment(entityEquipmentResponse.data.data || []);
             setError(null);
         } catch (err) {
             console.error('Error fetching equipment data:', err);
@@ -68,7 +72,7 @@ const EquipmentTabRenderer = ({ entityId, entityType = 'room' }) => {
 
             const equipmentIds = selectedEquipment.map(eq => eq.id);
 
-            await api.post(`/rooms/${entityId}/equipment/sync`, {
+            await api.post(`/${entityPlural}/${entityId}/equipment/sync`, {
                 equipment_ids: equipmentIds
             });
 
@@ -99,7 +103,7 @@ const EquipmentTabRenderer = ({ entityId, entityType = 'room' }) => {
             {/* Header with Save Button */}
             <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
                 <div className="text-sm text-gray-600">
-                    Seleziona le dotazioni presenti in questa stanza
+                    Seleziona le dotazioni presenti {type === 'room' ? 'in questa stanza' : 'in questo immobile'}
                 </div>
                 <Button
                     onClick={handleSave}

@@ -29,4 +29,13 @@ class Equipment extends Model
         return $this->belongsToMany(Room::class, 'room_equipment', 'equipment_id', 'room_id')
                     ->withTimestamps();
     }
+
+    /**
+     * Properties that have this equipment
+     */
+    public function properties()
+    {
+        return $this->belongsToMany(Property::class, 'property_equipment', 'equipment_id', 'property_id')
+                    ->withTimestamps();
+    }
 }
