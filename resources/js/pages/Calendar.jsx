@@ -1207,7 +1207,7 @@ export default function Calendar() {
                             ? 'Dettagli check out'
                             : 'Dettagli segnalazione'
                     }
-                    size="md"
+                    maxWidth="xl"
                 >
                     <div className="space-y-4">
                         {/* Event name */}
