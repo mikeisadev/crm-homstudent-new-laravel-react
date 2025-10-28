@@ -36,7 +36,11 @@ class ContractController extends Controller
             }
 
             $query->orderBy('created_at', 'desc');
-            $contracts = $query->paginate(15);
+
+            // Respect per_page parameter for select field options (e.g., per_page=9999)
+            // Default to 15 for listing pages
+            $perPage = $request->input('per_page', 15);
+            $contracts = $query->paginate($perPage);
 
             return $this->success([
                 'contracts' => ContractResource::collection($contracts->items()),

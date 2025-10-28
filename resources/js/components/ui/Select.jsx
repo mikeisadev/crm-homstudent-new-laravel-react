@@ -45,7 +45,7 @@ export default function Select({
             color: state.isSelected ? 'white' : '#374151',
             '&:hover': {
                 backgroundColor: state.isSelected ? '#3b82f6' : '#dbeafe',
-            },
+            }
         }),
         placeholder: (base) => ({
             ...base,

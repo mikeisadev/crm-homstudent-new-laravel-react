@@ -20,7 +20,11 @@ class CondominiumController extends Controller
                 $search = $request->input('search');
                 $query->where('name', 'like', "%{$search}%")->orWhere('address', 'like', "%{$search}%");
             }
-            $condominiums = $query->orderBy('created_at', 'desc')->paginate(15);
+
+            // Respect per_page parameter for select field options (e.g., per_page=9999)
+            // Default to 15 for listing pages
+            $perPage = $request->input('per_page', 15);
+            $condominiums = $query->orderBy('created_at', 'desc')->paginate($perPage);
             return $this->success([
                 'condominiums' => CondominiumResource::collection($condominiums->items()),
                 'pagination' => [

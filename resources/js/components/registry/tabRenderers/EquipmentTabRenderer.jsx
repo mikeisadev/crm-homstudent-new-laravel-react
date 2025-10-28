@@ -24,7 +24,8 @@ const EquipmentTabRenderer = ({ entityId, entityType = 'room' }) => {
             setLoading(true);
 
             // Fetch all available equipment items
-            const equipmentResponse = await api.get('/equipment');
+            // IMPORTANT: Using per_page=9999 to get ALL equipment for selection
+            const equipmentResponse = await api.get('/equipment?per_page=9999');
 
             // Fetch room's current equipment
             const roomEquipmentResponse = await api.get(`/rooms/${entityId}/equipment`);

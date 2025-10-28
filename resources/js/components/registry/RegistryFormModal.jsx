@@ -5,6 +5,7 @@ import Input from '../ui/Input';
 import Select from '../ui/Select';
 import DatePicker from '../ui/DatePicker';
 import api from '../../services/api';
+import DateUtil from '../../utils/date';
 
 /**
  * Generic Registry Form Modal Component
@@ -45,7 +46,12 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
                 // Load all dynamic options in parallel
                 const promises = fieldsWithLoadFrom.map(async (field) => {
                     try {
-                        const response = await api.get(field.loadFrom);
+                        // IMPORTANT: Add per_page=9999 to get ALL records for select field options
+                        // These are for entity correlation, not listing/pagination
+                        const url = field.loadFrom.includes('?')
+                            ? `${field.loadFrom}&per_page=9999`
+                            : `${field.loadFrom}?per_page=9999`;
+                        const response = await api.get(url);
                         const data = response.data.data;
 
                         // Extract the actual array based on endpoint
@@ -208,18 +214,11 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
                         isClearable={!field.required}
                     />
                 ) : field.type === 'date' ? (
-                    // Use flatpickr DatePicker for date fields
                     <DatePicker
-                        value={formData[field.key] || ''}
-                        onChange={(dates) => {
-                            // Flatpickr returns array of dates, we want the first one
-                            const selectedDate = dates[0];
-                            if (selectedDate) {
-                                // Format as YYYY-MM-DD for backend
-                                const year = selectedDate.getFullYear();
-                                const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-                                const day = String(selectedDate.getDate()).padStart(2, '0');
-                                handleChange(field.key, `${year}-${month}-${day}`);
+                        value={(new Date(formData[field.key])) || ''}
+                        onChange={([date]) => {
+                            if (date) {
+                                handleChange(field.key, DateUtil.formatDate(date));
                             } else {
                                 handleChange(field.key, '');
                             }

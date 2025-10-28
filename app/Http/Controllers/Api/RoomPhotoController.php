@@ -28,9 +28,15 @@ class RoomPhotoController extends Controller
             $room = Room::findOrFail($roomId);
             $photos = $room->photos()->orderBy('sort_order', 'asc')->get();
 
+            foreach ($photos as $k => $v) {
+                $file = $this->getPhotoDiskResource($roomId, $v['id']);
+
+                $photos[$k]['thumbnail'] = 'data:' . $file['mime_type'] . ';base64,' . base64_encode($file['file']);
+            }
+
             return $this->success($photos, 'Foto recuperate con successo');
         } catch (\Exception $e) {
-            return $this->error('Errore nel recupero delle foto', 500);
+            return $this->error($e, 500);
         }
     }
 
@@ -89,17 +95,9 @@ class RoomPhotoController extends Controller
     public function view(int $roomId, int $photoId)
     {
         try {
-            $room = Room::findOrFail($roomId);
-            $photo = RoomPhoto::where('room_id', $room->id)->findOrFail($photoId);
-
-            $fullPath = $photo->getFullDiskPath();
-
-            if (!Storage::disk($this->disk)->exists($fullPath)) {
-                return $this->error('File non trovato', 404);
-            }
-
-            $file = Storage::disk($this->disk)->get($fullPath);
-            return response($file, 200)->header('Content-Type', $photo->mime_type);
+            $resource = $this->getPhotoDiskResource($roomId, $photoId);
+            
+            return response($resource['file'], 200)->header('Content-Type', $resource['mime_type']);
         } catch (\Exception $e) {
             return $this->error('Errore nella visualizzazione della foto', 500);
         }
@@ -110,7 +108,11 @@ class RoomPhotoController extends Controller
      */
     public function thumbnail(int $roomId, int $photoId)
     {
-        return $this->view($roomId, $photoId);
+        try {
+            return $this->view($roomId, $photoId);
+        } catch (\Exception $e) {
+            return $this->error('Errore nel recupero della copertina dell\'immagine', 500);
+        }
     }
 
     /**
@@ -128,5 +130,24 @@ class RoomPhotoController extends Controller
         } catch (\Exception $e) {
             return $this->error('Errore nell\'eliminazione della foto', 500);
         }
+    }
+
+    /**
+     * Get image resource from disk
+     */
+    private function getPhotoDiskResource(int $roomId, int $photoId) {
+        $room = Room::findOrFail($roomId);
+        $photo = RoomPhoto::where('room_id', $room->id)->findOrFail($photoId);
+
+        $fullPath = $photo->getFullDiskPath();
+
+        if (!Storage::disk($this->disk)->exists($fullPath)) {
+            return $this->error('File non trovato', 404);
+        }
+
+        return [
+            'file'       => Storage::disk($this->disk)->get($fullPath),
+            'mime_type'  => $photo->mime_type
+        ];
     }
 }

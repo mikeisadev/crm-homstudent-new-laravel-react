@@ -76,7 +76,10 @@ class ClientController extends Controller
             $query->orderBy('created_at', 'desc');
 
             // Paginate results
-            $clients = $query->paginate(15);
+            // Respect per_page parameter for select field options (e.g., per_page=9999)
+            // Default to 15 for listing pages
+            $perPage = $request->input('per_page', 15);
+            $clients = $query->paginate($perPage);
 
             return $this->success([
                 'clients' => ClientResource::collection($clients->items()),

@@ -77,7 +77,12 @@ export default function RegistryDetails({ config, item, onEdit, onDelete, onUpda
             try {
                 const promises = fieldsToLoad.map(async (field) => {
                     try {
-                        const response = await api.get(field.loadFrom);
+                        // IMPORTANT: Add per_page=9999 to get ALL records for select field options
+                        // These are for entity correlation, not listing/pagination
+                        const url = field.loadFrom.includes('?')
+                            ? `${field.loadFrom}&per_page=9999`
+                            : `${field.loadFrom}?per_page=9999`;
+                        const response = await api.get(url);
                         const data = response.data.data;
 
                         // Extract array from response

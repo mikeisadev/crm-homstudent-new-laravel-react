@@ -26,7 +26,11 @@ class ProposalController extends Controller
             }
 
             $query->orderBy('created_at', 'desc');
-            $proposals = $query->paginate(15);
+
+            // Respect per_page parameter for select field options (e.g., per_page=9999)
+            // Default to 15 for listing pages
+            $perPage = $request->input('per_page', 15);
+            $proposals = $query->paginate($perPage);
 
             return $this->success([
                 'proposals' => ProposalResource::collection($proposals->items()),

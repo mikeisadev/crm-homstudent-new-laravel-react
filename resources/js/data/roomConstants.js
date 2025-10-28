@@ -21,6 +21,7 @@ export const ROOM_TYPES = [
 // Minimum Stay Type
 export const MINIMUM_STAY_TYPES = [
     { value: 'days', label: 'Giorni' },
+    { value: 'weeks', label: 'Settimane' },
     { value: 'months', label: 'Mesi' },
     { value: 'years', label: 'Anni' },
 ];
@@ -32,10 +33,10 @@ export const YES_NO_OPTIONS = [
 ];
 
 // Gender Preference
+// Must match database enum: ['male', 'female', 'couple', 'family', 'any']
 export const GENDER_PREFERENCES = [
     { value: 'male', label: 'Maschio' },
     { value: 'female', label: 'Femmina' },
-    { value: 'single', label: 'Single' },
     { value: 'couple', label: 'Coppia' },
     { value: 'family', label: 'Famiglia' },
     { value: 'any', label: 'Qualsiasi' },

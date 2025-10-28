@@ -135,13 +135,15 @@ export default function Calendar() {
     const fetchInitialData = async () => {
         try {
             // Fetch all data in parallel
+            // IMPORTANT: Using per_page=9999 to get ALL records for select field options
+            // These are NOT for listing/pagination, but for entity correlation in dropdowns
             const [propertiesRes, roomsRes, clientsRes, contractsRes, suppliersRes] =
                 await Promise.all([
-                    api.get('/properties'),
-                    api.get('/rooms'),
-                    api.get('/clients'),
-                    api.get('/contracts'),
-                    api.get('/suppliers'),
+                    api.get('/properties?per_page=9999'),
+                    api.get('/rooms?per_page=9999'),
+                    api.get('/clients?per_page=9999'),
+                    api.get('/contracts?per_page=9999'),
+                    api.get('/suppliers?per_page=9999'),
                 ]);
 
             // Transform properties to react-select format

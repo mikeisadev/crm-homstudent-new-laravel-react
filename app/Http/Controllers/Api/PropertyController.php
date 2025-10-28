@@ -41,7 +41,11 @@ class PropertyController extends Controller
             }
 
             $query->orderBy('created_at', 'desc');
-            $properties = $query->paginate(15);
+
+            // Respect per_page parameter for select field options (e.g., per_page=9999)
+            // Default to 15 for listing pages
+            $perPage = $request->input('per_page', 15);
+            $properties = $query->paginate($perPage);
 
             return $this->success([
                 'properties' => PropertyResource::collection($properties->items()),
@@ -53,7 +57,7 @@ class PropertyController extends Controller
                     'from' => $properties->firstItem(),
                     'to' => $properties->lastItem(),
                 ],
-            ], 'Propriet\u00e0 recuperate con successo');
+            ], 'Proprietà recuperate con successo');
 
         } catch (\Exception $e) {
             return $this->error('Errore nel recupero delle propriet\u00e0', 500);
@@ -76,7 +80,7 @@ class PropertyController extends Controller
             $property = Property::with(['condominium', 'rooms', 'owners'])->findOrFail($id);
             return $this->success(new PropertyResource($property), 'Propriet\u00e0 recuperata con successo');
         } catch (\Exception $e) {
-            return $this->error('Propriet\u00e0 non trovata', 404);
+            return $this->error('Proprietà non trovata', 404);
         }
     }
 

@@ -46,7 +46,11 @@ class RoomController extends Controller
             }
 
             $query->orderBy('internal_code', 'asc');
-            $rooms = $query->paginate(50);
+
+            // Respect per_page parameter for select field options (e.g., per_page=9999)
+            // Default to 50 for listing pages
+            $perPage = $request->input('per_page', 50);
+            $rooms = $query->paginate($perPage);
 
             return $this->success([
                 'rooms' => RoomResource::collection($rooms->items()),

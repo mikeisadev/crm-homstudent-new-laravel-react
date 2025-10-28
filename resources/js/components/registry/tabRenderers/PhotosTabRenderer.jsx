@@ -4,16 +4,25 @@ import Button from '../../ui/Button';
 
 /**
  * Photos Tab Renderer
- * Displays and manages photos for a room
- * Photos are stored in storage/app/private/room_photos/{uuid}/
+ * Displays and manages photos for any entity type (rooms, properties, etc.)
+ * Photos are stored in storage/app/private/{entity}_photos/{uuid}/
  *
  * Features:
  * - Upload photos (JPG, PNG only)
  * - View photos in gallery
  * - Delete photos
  * - Reorder photos (drag and drop)
+ *
+ * @param {number} entityId - ID of the entity
+ * @param {string} entityType - Type of entity (from rendererProps)
+ * @param {string} apiEndpoint - Base API endpoint (from rendererProps)
+ * @param {object} rendererProps - Additional props from config (entityType, apiEndpoint)
+ * @returns {JSX.Element}
  */
-const PhotosTabRenderer = ({ entityId, entityType = 'room', apiEndpoint }) => {
+const PhotosTabRenderer = ({ entityId, entityType, apiEndpoint, rendererProps = {} }) => {
+    const type = entityType || rendererProps.entityType || 'room';
+    const endpoint = apiEndpoint || rendererProps.apiEndpoint;
+
     const [photos, setPhotos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
@@ -26,9 +35,10 @@ const PhotosTabRenderer = ({ entityId, entityType = 'room', apiEndpoint }) => {
     const fetchPhotos = async () => {
         try {
             setLoading(true);
-            const response = await api.get(`/${apiEndpoint}/${entityId}/photos`);
+
+            const response = await api.get(`${endpoint}/${entityId}/photos`);
             const data = response.data.data || [];
-            // Ensure data is an array (defensive programming)
+
             setPhotos(Array.isArray(data) ? data : []);
             setError(null);
         } catch (err) {
@@ -62,7 +72,7 @@ const PhotosTabRenderer = ({ entityId, entityType = 'room', apiEndpoint }) => {
                 const formData = new FormData();
                 formData.append('photo', file);
 
-                await api.post(`/${apiEndpoint}/${entityId}/photos`, formData, {
+                await api.post(`${endpoint}/${entityId}/photos`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
@@ -86,7 +96,7 @@ const PhotosTabRenderer = ({ entityId, entityType = 'room', apiEndpoint }) => {
         }
 
         try {
-            await api.delete(`/${apiEndpoint}/${entityId}/photos/${photoId}`);
+            await api.delete(`${endpoint}/${entityId}/photos/${photoId}`);
             await fetchPhotos();
             setError(null);
         } catch (err) {
@@ -97,11 +107,14 @@ const PhotosTabRenderer = ({ entityId, entityType = 'room', apiEndpoint }) => {
 
     const handleViewPhoto = async (photoId) => {
         try {
-            const response = await api.get(`/${apiEndpoint}/${entityId}/photos/${photoId}/view`, {
+            const response = await api.get(`${endpoint}/${entityId}/photos/${photoId}/view`, {
                 responseType: 'blob'
             });
+
             const blob = new Blob([response.data], { type: response.headers['content-type'] });
+
             const url = window.URL.createObjectURL(blob);
+
             window.open(url, '_blank');
         } catch (err) {
             console.error('Error viewing photo:', err);
@@ -158,8 +171,8 @@ const PhotosTabRenderer = ({ entityId, entityType = 'room', apiEndpoint }) => {
                     </div>
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-                        {photos.map((photo) => (
-                            <div
+                        {photos.map((photo) => {                            
+                            return <div
                                 key={photo.id}
                                 className="relative group bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                             >
@@ -169,7 +182,7 @@ const PhotosTabRenderer = ({ entityId, entityType = 'room', apiEndpoint }) => {
                                     onClick={() => handleViewPhoto(photo.id)}
                                 >
                                     <img
-                                        src={`/api/${apiEndpoint}/${entityId}/photos/${photo.id}/thumbnail`}
+                                        src={photo.thumbnail}
                                         alt={photo.original_name}
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
@@ -199,7 +212,7 @@ const PhotosTabRenderer = ({ entityId, entityType = 'room', apiEndpoint }) => {
                                     </button>
                                 </div>
                             </div>
-                        ))}
+                        })}
                     </div>
                 )}
             </div>

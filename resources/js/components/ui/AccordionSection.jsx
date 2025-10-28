@@ -10,7 +10,7 @@ import { useState } from 'react';
  * @param {string} className - Additional CSS classes
  * @returns {JSX.Element}
  */
-export default function AccordionSection({ title, defaultOpen = false, children, className = '' }) {
+export default function AccordionSection({ title, defaultOpen = false, children, hideOverflow = true, className = '' }) {
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
     return (
@@ -34,9 +34,9 @@ export default function AccordionSection({ title, defaultOpen = false, children,
 
             {/* Accordion Content */}
             <div
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-                }`}
+                className={`transition-all duration-300 ease-in-out 
+                    ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}
+                    ${hideOverflow ? `overflow-hidden` : '' }`}
             >
                 <div className="pb-4">{children}</div>
             </div>

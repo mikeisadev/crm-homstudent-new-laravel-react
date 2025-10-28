@@ -13,6 +13,7 @@ class Room extends Model
 
     protected $fillable = [
         'property_id',
+        'documents_folder_uuid',
         'internal_code',
         'room_type',
         'surface_area',
