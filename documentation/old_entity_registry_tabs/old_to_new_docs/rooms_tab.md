@@ -1,7 +1,9 @@
+[DONE] - THIS SECTION HAS BEEN DEVELOPED SUCCESSFULLY
+
 Now we have to finish to develop the tab "Stanze".
 
 These are the key step:
-- The "Nuovo" in "Stanze" tabs must open a modal with these fields: "documentation/old_entity_registry_tabs/add_new_modals/add_new_room_modal.png"
+- The "Nuovo" in "Stanze" tab must open a modal with these fields: "documentation/old_entity_registry_tabs/add_new_modals/add_new_room_modal.png"
 - Those fields must be reported to be inline edited inside the middle column of the registry layout
 - If some fields cannot be saved inside the database because database columns are missing to save that or those fields, you can think of creating a "room_meta" table like we have done with "clients" and "client_meta".
 - You'll find Rooms tab screen of the old project in: documentation/old_entity_registry_tabs/rooms_tab.png
