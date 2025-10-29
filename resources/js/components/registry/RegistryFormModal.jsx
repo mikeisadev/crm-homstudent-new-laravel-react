@@ -6,6 +6,7 @@ import Select from '../ui/Select';
 import DatePicker from '../ui/DatePicker';
 import api from '../../services/api';
 import DateUtil from '../../utils/date';
+import { viewDocument, getEntityTypeSlug } from '../../utils/documentViewer';
 
 /**
  * Generic Registry Form Modal Component
@@ -26,6 +27,7 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
     const [saving, setSaving] = useState(false);
     const [dynamicOptions, setDynamicOptions] = useState({});
     const [loadingOptions, setLoadingOptions] = useState(false);
+    const [uploadedFiles, setUploadedFiles] = useState({});
 
     const isEdit = !!item;
 
@@ -104,18 +106,41 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
                         value = value ? '1' : '0';
                     }
 
-                    initialData[field.key] = value !== undefined && value !== null ? value : '';
+                    // Handle multi-select: check for relationship data (e.g., owners)
+                    if (field.isMulti && field.type === 'select') {
+                        // Look for relationship data in item (e.g., item.owners)
+                        const relationshipKey = field.key.replace('_ids', 's'); // owner_ids -> owners
+                        const relationshipData = item[relationshipKey] || item[field.key.replace('_id', '').replace('_ids', '')];
+
+                        if (Array.isArray(relationshipData)) {
+                            // Extract IDs from relationship array
+                            value = relationshipData.map(rel => rel.id);
+                        } else if (Array.isArray(value)) {
+                            value = value;
+                        } else {
+                            value = [];
+                        }
+                    }
+
+                    initialData[field.key] = value !== undefined && value !== null ? value : (field.isMulti ? [] : '');
                 });
                 setFormData(initialData);
             } else {
                 // Create mode - initialize with empty values or defaults
                 const initialData = {};
                 config.formFields?.forEach((field) => {
-                    initialData[field.key] = field.defaultValue !== undefined ? field.defaultValue : '';
+                    // Handle default values that are functions
+                    let defaultVal = field.defaultValue;
+                    if (typeof defaultVal === 'function') {
+                        defaultVal = defaultVal();
+                    }
+
+                    initialData[field.key] = defaultVal !== undefined ? defaultVal : (field.isMulti ? [] : '');
                 });
                 setFormData(initialData);
             }
             setErrors({});
+            setUploadedFiles({});
         }
     }, [isOpen, item, config.formFields]);
 
@@ -166,7 +191,8 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
         setSaving(true);
 
         try {
-            await onSave(formData);
+            // Pass both formData and uploadedFiles to parent
+            await onSave(formData, uploadedFiles);
             // Modal will be closed by parent
         } catch (err) {
             // Error is handled by parent
@@ -174,6 +200,22 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
         } finally {
             setSaving(false);
         }
+    };
+
+    /**
+     * Handle viewing a document
+     * Uses blob URL for secure authenticated viewing
+     */
+    const handleViewDocument = async (document) => {
+        const entityTypeSlug = getEntityTypeSlug(config);
+        const filename = document.name || 'document.pdf';
+
+        await viewDocument(
+            entityTypeSlug,
+            item.id,
+            document.id,
+            filename
+        );
     };
 
     /**
@@ -205,14 +247,86 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
                     />
                 ) : field.type === 'select' ? (
                     // Always use react-select for all select fields
-                    <Select
-                        options={fieldOptions || []}
-                        value={fieldOptions?.find(opt => opt.value === formData[field.key]) || null}
-                        onChange={(selectedOption) => handleChange(field.key, selectedOption?.value || '')}
-                        placeholder={field.placeholder || 'Seleziona...'}
-                        isDisabled={saving || loadingOptions}
-                        isClearable={!field.required}
-                    />
+                    field.isMulti ? (
+                        // Multi-select mode
+                        <Select
+                            options={fieldOptions || []}
+                            value={fieldOptions?.filter(opt =>
+                                Array.isArray(formData[field.key]) && formData[field.key].includes(opt.value)
+                            ) || []}
+                            onChange={(selectedOptions) => {
+                                const values = selectedOptions ? selectedOptions.map(opt => opt.value) : [];
+                                handleChange(field.key, values);
+                            }}
+                            placeholder={field.placeholder || 'Seleziona...'}
+                            isDisabled={saving || loadingOptions}
+                            isClearable={!field.required}
+                            isMulti={true}
+                        />
+                    ) : (
+                        // Single select mode
+                        <Select
+                            options={fieldOptions || []}
+                            value={fieldOptions?.find(opt => opt.value === formData[field.key]) || null}
+                            onChange={(selectedOption) => handleChange(field.key, selectedOption?.value || '')}
+                            placeholder={field.placeholder || 'Seleziona...'}
+                            isDisabled={saving || loadingOptions}
+                            isClearable={!field.required}
+                        />
+                    )
+                ) : field.type === 'file' ? (
+                    // File upload field
+                    <div className="space-y-2">
+                        <input
+                            type="file"
+                            id={`file-${field.key}`}
+                            accept={field.accept || '*'}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    setUploadedFiles(prev => ({
+                                        ...prev,
+                                        [field.key]: file
+                                    }));
+                                    handleChange(field.key, file.name);
+                                }
+                            }}
+                            className="hidden"
+                            disabled={saving}
+                        />
+                        <div className="flex items-center gap-2">
+                            <Button
+                                type="button"
+                                onClick={() => document.getElementById(`file-${field.key}`).click()}
+                                variant="secondary"
+                                size="sm"
+                                disabled={saving}
+                            >
+                                {field.buttonLabel || 'Scegli file'}
+                            </Button>
+                            {uploadedFiles[field.key] && (
+                                <span className="text-sm text-gray-600">
+                                    {uploadedFiles[field.key].name}
+                                </span>
+                            )}
+                        </div>
+                        {/* Show existing PDF link in edit mode */}
+                        {isEdit && item && item.documents && item.documents.length > 0 && (
+                            <div className="mt-2 flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => handleViewDocument(item.documents[0])}
+                                    className="text-blue-600 hover:text-blue-800 text-sm underline font-medium"
+                                    disabled={saving}
+                                >
+                                    📄 Visualizza PDF allegato
+                                </button>
+                                <span className="text-xs text-gray-500">
+                                    ({item.documents[0].name || 'PDF'})
+                                </span>
+                            </div>
+                        )}
+                    </div>
                 ) : field.type === 'date' ? (
                     <DatePicker
                         value={(new Date(formData[field.key])) || ''}
@@ -263,16 +377,16 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
                         </div>
                     ) : (
                         <>
-                            {/* Grid fields (all fields except textarea) */}
+                            {/* Grid fields (all fields except textarea and file) */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {config.formFields
-                                    .filter((field) => field.type !== 'textarea')
+                                    .filter((field) => field.type !== 'textarea' && field.type !== 'file')
                                     .map((field) => renderField(field))}
                             </div>
 
-                            {/* Full-width textarea fields at the bottom */}
+                            {/* Full-width textarea and file fields at the bottom */}
                             {config.formFields
-                                .filter((field) => field.type === 'textarea')
+                                .filter((field) => field.type === 'textarea' || field.type === 'file')
                                 .map((field) => (
                                     <div key={field.key} className="mt-4">
                                         {renderField(field)}
@@ -303,7 +417,9 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
                                 Salvataggio...
                             </>
                         ) : (
-                            isEdit ? 'Salva Modifiche' : 'Crea'
+                            isEdit
+                                ? (config.editButtonLabel || 'Salva Modifiche')
+                                : (config.createButtonLabel || 'Crea')
                         )}
                     </Button>
                 </div>

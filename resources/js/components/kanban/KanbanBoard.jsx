@@ -104,10 +104,76 @@ export default function KanbanBoard({ config, onRefresh }) {
     /**
      * Handle saving item (create or update)
      */
-    const handleSave = async () => {
-        await loadItems();
-        if (onRefresh) onRefresh();
-        handleCloseModal();
+    const handleSave = async (itemData, uploadedFiles = {}) => {
+        const isUpdate = !!selectedItem;
+
+        try {
+            // Prepare form data for file upload if there are files
+            const hasFiles = Object.keys(uploadedFiles).length > 0;
+            let payload;
+
+            if (hasFiles) {
+                // Use FormData for multipart/form-data
+                payload = new FormData();
+
+                // Add all regular fields
+                Object.keys(itemData).forEach(key => {
+                    const value = itemData[key];
+
+                    // Handle arrays (like owner_ids)
+                    if (Array.isArray(value)) {
+                        value.forEach((item, index) => {
+                            payload.append(`${key}[${index}]`, item);
+                        });
+                    } else if (value !== null && value !== undefined) {
+                        payload.append(key, value);
+                    }
+                });
+
+                // Add uploaded files
+                Object.keys(uploadedFiles).forEach(key => {
+                    payload.append(key, uploadedFiles[key]);
+                });
+            } else {
+                // Regular JSON payload
+                payload = itemData;
+            }
+
+            let response;
+            if (isUpdate) {
+                // For updates with files, we need to use POST with _method=PUT because FormData doesn't work well with PUT
+                if (hasFiles) {
+                    payload.append('_method', 'PUT');
+                    response = await api.post(`${config.apiEndpoint}/${selectedItem.id}`, payload, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                } else {
+                    response = await api.put(`${config.apiEndpoint}/${selectedItem.id}`, payload);
+                }
+            } else {
+                response = await api.post(config.apiEndpoint, payload, hasFiles ? {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                } : {});
+            }
+
+            if (response.data.success) {
+                // Reload items
+                await loadItems();
+                if (onRefresh) onRefresh();
+                handleCloseModal();
+
+                alert(isUpdate
+                    ? `${config.titleSingular} aggiornato con successo`
+                    : `${config.titleSingular} creato con successo`
+                );
+            } else {
+                throw new Error(response.data.message || 'Errore durante il salvataggio');
+            }
+        } catch (err) {
+            console.error(`Error saving ${config.entity}:`, err);
+            alert('Errore durante il salvataggio: ' + (err.response?.data?.message || err.message));
+            throw err; // Re-throw to prevent modal from closing
+        }
     };
 
     /**

@@ -13,6 +13,8 @@
  * - Form fields for create/edit modals
  */
 
+import { CONTRACT_TYPES, MANAGERS, OPERATIONAL_STATUS } from '../data/managementContractConstants';
+
 /**
  * Management Contracts (Contratti di gestione) Configuration
  */
@@ -94,8 +96,117 @@ export const managementContractsConfig = {
         ]
     },
 
-    // Form fields for modal (will be populated later by user)
-    formFields: []
+    // Form fields for modal
+    formFields: [
+        {
+            key: 'property_id',
+            label: 'Immobile',
+            type: 'select',
+            required: true,
+            loadFrom: '/properties',
+            optionLabel: (item) => item.internal_code || item.name || `Immobile ${item.id}`,
+            placeholder: 'Seleziona immobile',
+        },
+        {
+            key: 'contract_type',
+            label: 'Tipo di contratto',
+            type: 'select',
+            required: true,
+            options: CONTRACT_TYPES,
+            placeholder: 'Seleziona tipo di contratto',
+        },
+        {
+            key: 'owner_ids',
+            label: 'Proprietari',
+            type: 'select',
+            required: false,
+            isMulti: true, // Multi-select
+            loadFrom: '/owners',
+            optionLabel: (item) => item.full_name || `${item.first_name || ''} ${item.last_name || ''}`.trim() || item.company_name || `Proprietario ${item.id}`,
+            placeholder: 'Seleziona un proprietario',
+        },
+        {
+            key: 'manager',
+            label: 'Gestore',
+            type: 'select',
+            required: false,
+            options: MANAGERS,
+            placeholder: 'Seleziona gestore',
+        },
+        {
+            key: 'current_date',
+            label: 'Data odierna',
+            type: 'date',
+            required: false,
+            defaultValue: () => new Date().toISOString().split('T')[0], // Today's date
+            placeholder: 'gg/mm/aaaa',
+        },
+        {
+            key: 'start_date',
+            label: 'Data inizio',
+            type: 'date',
+            required: true,
+            placeholder: 'gg/mm/aaaa',
+        },
+        {
+            key: 'end_date',
+            label: 'Data fine',
+            type: 'date',
+            required: false,
+            placeholder: 'gg/mm/aaaa',
+        },
+        {
+            key: 'notice_months',
+            label: 'Mesi di preavviso',
+            type: 'number',
+            required: false,
+            placeholder: '0',
+        },
+        {
+            key: 'status',
+            label: 'Stato operativo',
+            type: 'select',
+            required: true,
+            options: OPERATIONAL_STATUS,
+            placeholder: 'Seleziona stato',
+        },
+        {
+            key: 'commission_percentage',
+            label: 'Compenso di gestione (%)',
+            type: 'number',
+            required: false,
+            placeholder: '0',
+            step: '0.01',
+        },
+        {
+            key: 'pdf_document',
+            label: 'Carica PDF',
+            type: 'file',
+            required: false,
+            accept: '.pdf',
+            buttonLabel: 'Scegli file',
+        },
+        {
+            key: 'notes',
+            label: 'Note',
+            type: 'textarea',
+            required: false,
+            rows: 4,
+            placeholder: 'Inserisci note...',
+        },
+        {
+            key: 'early_termination_notes',
+            label: 'Note di dismissione anticipata',
+            type: 'textarea',
+            required: false,
+            rows: 4,
+            placeholder: 'Inserisci note di dismissione...',
+        }
+    ],
+
+    // Custom button labels for create/edit actions
+    createButtonLabel: 'Genera contratto',
+    editButtonLabel: 'Modifica contratto',
 };
 
 /**

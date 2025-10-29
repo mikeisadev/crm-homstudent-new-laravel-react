@@ -104,6 +104,7 @@ class Document extends Model
             'App\Models\Room' => 'room_documents',
             'App\Models\Property' => 'property_documents',
             'App\Models\Condominium' => 'condominium_documents',
+            'App\Models\ManagementContract' => 'managementcontract_documents',
         ];
 
         return $typeMap[$this->documentable_type] ?? 'documents';

@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\PropertyDocumentController;
 use App\Http\Controllers\Api\PropertyPhotoController;
 use App\Http\Controllers\Api\PropertyEquipmentController;
 use App\Http\Controllers\Api\ManagementContractController;
+use App\Http\Controllers\Api\ManagementContractDocumentController;
 use App\Http\Controllers\Api\ProposalController;
 use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\RoomDocumentController;
@@ -204,6 +205,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Management Contracts
     Route::apiResource('management-contracts', ManagementContractController::class);
+
+    // Management Contract Documents
+    Route::prefix('management-contracts/{managementContract}')->group(function () {
+        Route::get('/documents', [ManagementContractDocumentController::class, 'index']);
+        Route::post('/documents', [ManagementContractDocumentController::class, 'store']);
+        Route::get('/documents/{document}', [ManagementContractDocumentController::class, 'show']);
+        Route::get('/documents/{document}/download', [ManagementContractDocumentController::class, 'download']);
+        Route::get('/documents/{document}/view', [ManagementContractDocumentController::class, 'view']);
+        Route::delete('/documents/{document}', [ManagementContractDocumentController::class, 'destroy']);
+    });
 
     // Proposal resources
     Route::apiResource('proposals', ProposalController::class);
