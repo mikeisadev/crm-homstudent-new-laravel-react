@@ -45,6 +45,26 @@ We'll first develop those basic things. Then if you'll do the job correctly, I'l
 
 I'll give you indications on the fields you'll have to add for each kanban modal later.
 
-# 1) New things to develop:
+# 1) New things to develop [DONE]:
 - Kanban component body must be horizontally scrollable to scroll along all kanban column status
 - When clicking a status button on the right top header part the user must see the kanban body scroll to the correct kanban status column
+
+# 2) New things to develop:
+- Add the fields you see in the screenshot "documentation/kanbans/old/contratti_di_gestione_kanban_modal.png" to the modal to add a new management contract inside the kanban for "Contratti di gestione"
+- Take into consideration those notes about the fields of the modal to add a new management contract:
+    - "Immobile" (react select field) here you have to list all the available properties because I need the possibility to relate the generated management contract with a property
+    - "Tipo di contratto" (react select field) will have those possible values: "Con rappresentanza", "Senza rappresentanza", add the placeholder "Seleziona tipo di contratto"
+    - "Proprietari" (react select field with multiple select possibilities) here you have to list all the available owners inside the CRM becuase I need a relation between the created management contract with multiple owners
+    - "Gestore" (react select field) with the possibility to select those values: "Top rent", add a placeholder "Seleziona gestore"
+    - "Data ordierna" (flatpickr only date field) preselect the current date
+    - "Data inizio" (flatpickr only date field) to select a start date
+    - "Data fine" (flatpickr only date field) to select an end date
+    - "Mesi di preavviso" (number field)
+    - "Stato operativo" (react select field) with those values: "Bozza di proposta", "Contratto attivo", "Contratto in corso", "Contratto scaduto", "Dismesso anticipatamente". Pay close attention: those are the statuses that can be found inside the kanban columns. Pay attention to this important detail.
+    - "Note" (free textarea field)
+    - "Note di dismissione anticipata" (free textarea field)
+    - "Compenso di gestione (%)" (number field)
+    - "Carica PDF" a button that will allow you to attach a PDF document for the current management contract. Consider the best option to save a single document attached to the current management contract that will be created. Can you consider using the already present database entity "documents"? Do a very deep analysis on this part.
+- The button to save and add a new management contract should be labeled with "Genera contratto"
+- The button to edit and update an exisiting management contract should be labeled with "Modifica contratto"
+- When you click a single item inside the kanban you can modify the management contract loading its data inside the modal, this is very important. In the edit modal for the management contract I must have the possibility to view the document by clicking to a link present in another label inside the modal called "Visualizza PDF allegato"

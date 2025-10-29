@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\PropertyDocumentController;
 use App\Http\Controllers\Api\PropertyPhotoController;
 use App\Http\Controllers\Api\PropertyEquipmentController;
+use App\Http\Controllers\Api\ManagementContractController;
 use App\Http\Controllers\Api\ProposalController;
 use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\RoomDocumentController;
@@ -200,6 +201,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/photos/{photo}/thumbnail', [CondominiumPhotoController::class, 'thumbnail']);
         Route::delete('/photos/{photo}', [CondominiumPhotoController::class, 'destroy']);
     });
+
+    // Management Contracts
+    Route::apiResource('management-contracts', ManagementContractController::class);
 
     // Proposal resources
     Route::apiResource('proposals', ProposalController::class);
