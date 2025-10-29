@@ -15,7 +15,7 @@ class ProposalController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Proposal::query();
+            $query = Proposal::with(['client', 'secondaryClient', 'property', 'room']);
 
             if ($request->has('client_id')) {
                 $query->where('client_id', $request->input('client_id'));
@@ -51,9 +51,34 @@ class ProposalController extends Controller
     public function store(Request $request)
     {
         try {
-            $proposal = Proposal::create($request->all());
+            $data = $request->all();
+
+            // Auto-generate proposal_number if not provided
+            if (empty($data['proposal_number'])) {
+                $year = date('Y');
+                $lastProposal = Proposal::whereYear('created_at', $year)
+                    ->orderBy('proposal_number', 'desc')
+                    ->first();
+
+                if ($lastProposal && preg_match('/P-' . $year . '-(\d{4})/', $lastProposal->proposal_number, $matches)) {
+                    $nextNumber = intval($matches[1]) + 1;
+                } else {
+                    $nextNumber = 1;
+                }
+
+                $data['proposal_number'] = sprintf('P-%s-%04d', $year, $nextNumber);
+            }
+
+            // Create proposal with all data including installments_json
+            // Laravel will automatically cast installments_json array to JSON
+            $proposal = Proposal::create($data);
+
+            // Load relationships for response
+            $proposal->load(['client', 'secondaryClient', 'property', 'room']);
+
             return $this->success(new ProposalResource($proposal), 'Proposta creata con successo', 201);
         } catch (\Exception $e) {
+            \Log::error('Error creating proposal: ' . $e->getMessage());
             return $this->error('Errore nella creazione della proposta', 500);
         }
     }
@@ -61,7 +86,7 @@ class ProposalController extends Controller
     public function show(int $id)
     {
         try {
-            $proposal = Proposal::with(['client', 'property', 'room'])->findOrFail($id);
+            $proposal = Proposal::with(['client', 'secondaryClient', 'property', 'room'])->findOrFail($id);
             return $this->success(new ProposalResource($proposal), 'Proposta recuperata con successo');
         } catch (\Exception $e) {
             return $this->error('Proposta non trovata', 404);
@@ -72,9 +97,17 @@ class ProposalController extends Controller
     {
         try {
             $proposal = Proposal::findOrFail($id);
+
+            // Update proposal with all data including installments_json
+            // Laravel will automatically cast installments_json array to JSON
             $proposal->update($request->all());
-            return $this->success(new ProposalResource($proposal->fresh()), 'Proposta aggiornata con successo');
+
+            // Reload with relationships
+            $proposal->load(['client', 'secondaryClient', 'property', 'room']);
+
+            return $this->success(new ProposalResource($proposal->fresh(['client', 'secondaryClient', 'property', 'room'])), 'Proposta aggiornata con successo');
         } catch (\Exception $e) {
+            \Log::error('Error updating proposal: ' . $e->getMessage());
             return $this->error('Errore nell\'aggiornamento della proposta', 500);
         }
     }

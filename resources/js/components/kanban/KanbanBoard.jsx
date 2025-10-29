@@ -24,12 +24,18 @@ export default function KanbanBoard({ config, onRefresh }) {
     const scrollContainerRef = useRef(null);
     const columnRefs = useRef({});
 
+    // Custom togglers
+    const isHorizontallyScrollable = false;
+
     /**
      * Handle horizontal scroll with mouse wheel
      * Converts vertical wheel events to horizontal scroll
      */
     useEffect(() => {
+        if (!isHorizontallyScrollable) return;
+
         const scrollContainer = scrollContainerRef.current;
+
         if (!scrollContainer) return;
 
         const handleWheel = (e) => {

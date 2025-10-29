@@ -45,11 +45,11 @@ We'll first develop those basic things. Then if you'll do the job correctly, I'l
 
 I'll give you indications on the fields you'll have to add for each kanban modal later.
 
-# 1) New things to develop [DONE]:
+# 1) New things to develop or add [DONE]:
 - Kanban component body must be horizontally scrollable to scroll along all kanban column status
 - When clicking a status button on the right top header part the user must see the kanban body scroll to the correct kanban status column
 
-# 2) New things to develop:
+# 2) Finish to develop kanban "Contratti di gestione" tab, entity name "management_contracts" [DONE]:
 - Add the fields you see in the screenshot "documentation/kanbans/old/contratti_di_gestione_kanban_modal.png" to the modal to add a new management contract inside the kanban for "Contratti di gestione"
 - Take into consideration those notes about the fields of the modal to add a new management contract:
     - "Immobile" (react select field) here you have to list all the available properties because I need the possibility to relate the generated management contract with a property
@@ -68,3 +68,61 @@ I'll give you indications on the fields you'll have to add for each kanban modal
 - The button to save and add a new management contract should be labeled with "Genera contratto"
 - The button to edit and update an exisiting management contract should be labeled with "Modifica contratto"
 - When you click a single item inside the kanban you can modify the management contract loading its data inside the modal, this is very important. In the edit modal for the management contract I must have the possibility to view the document by clicking to a link present in another label inside the modal called "Visualizza PDF allegato"
+
+# 3) Finish to develop kanban "Proposte" tab, entity name "proposals" [DONE]:
+- Add the fields you see in the screenshot "documentation/kanbans/old/proposte_kanban_modal.png" to the modal to add a new proposal inside the kanban for "Proposte"
+- Take into consideration those notes about the fields of the modal to add a new proposal:
+    - "Tipo di proposta" (react select field) and the fields you can select are: "Sublocazione", "Abitativo a canone libero", "Abitativo a canone concordato", "Transitorio per lavoratori", "Transitorio per studenti". Add a proper select value placeholder or "Seleziona tipo di proposta" placeholder.
+    - "Data inizio" (flatpickr only date field) to select a start date
+    - "Data fine" (flatpickr only date field) to select an end date
+    - "Tipo immobile" (react select field) here you can select one of the two main entities about real estate inside this CRM:
+        - "Stanza" or rooms, as you can see is an entity inside this project
+        - "Immobile" or properties, as you can see is an entity inside this project
+        - DEVELOPING THIS FIELD IS IMPORTANT TO: Keep "stanza" selected as default starting value.
+        - DEVELOPING THIS FIELD IS IMPORTANT TO: Based on the selected option for this field, the next field ("Codice stanza" | "Codice immobile") will load data in a different way and the feature is described next.
+    - "Codice stanza" | "Codice immobile" (react select field) this field is critical: based on the selected entity in "Tipo immobile" field here you'll see the list of all the available properties if you selected "Immobile" in "Tipo immobile" or the list of all the rooms available if you selected "Stanza" in "Tipo immobile"
+    - "Mesi di preavviso" (number field)
+    - "Giorni per la restituzione della caparra" (number field)
+    - "Data invio" (date time field) also this field is critical because it must be present as data for each proposal in the column of the database table for proposals, but it should correspond to the timestamp when a proposal is inserted into the database. So it should be handled by the backend and database only and not be shown in the modal as a field.
+    - "Cliente 1" can be also named "Inquilino 1" (react select field) this is another critical field that is very very important: when creating a proposal you can assign a max of two clients to a proposal for a room or a property. So here should be listed all the available clients in the CRM and you can select one of them.
+    - "Cliente 2" can be also named "Inquilino 2" (react select field) this is the field where you can select the second client for the current proposal. So this field should not be selectable if you did not select the first client. After selecting the first client, you can use this field where you'll see a list of all available clients except the one you selected in the field "Cliente 1" or "Inquilino 1".
+    - "Importo caparra" (number field)
+    - "Spese ingresso" (number field)
+    - "Canone mensile" (number field)
+    - "Giorni di validità" (number field) with default value equal to "2"
+    - "Rateizzazione" (field group) this field is very very critical and must be implemented perfectly also with the underlying database structure that will be modified for proposals entity. This field group must have, with the best UX/UI and UX features, all the 12 payment fields grouped in a 4 columns. Each month should have two fields: one to select the month where that payment should be done by the selected client or clients (and this field should be a flatpickr date only field) and the other one to insert the amount to be paid (and this field should be a number field). Now also the process of saving this data in the database is critical: this because we have a structured data with 12 elements which each one of them has two values (one a date and the second is a number). I was thinking in having a database column for the proposal table called "installments_json" where we store all the 12 installments in the JSON format, that we'll encode and decode for each future edit of the single proposal, because they can be edited in the future when clicking an item in the proposals kanban. Inside this json data structure I also need an hidden field for each of the 12 installments called "is_payment_completed" with true or false possible values. This will be used by me in the future to continue developing this part of the software.
+- The button to save and add a new proposal should be labeled with "Genera proposta"
+- The button to edit and update an exisiting proposal should be labeled with "Modifica proposta"
+- When you click a single item inside the kanban you can modify the proposal loading its data inside the modal, this is very important. Carefully load the installment data for each field in the installments field group, this is very important for a production ready software. Take all your time to develop this part as a real and powerful senior software engineer. I need this part completely production ready.
+- Be sure that the proposals database table correctly represent the fields listed here and that each data field will find its place in the proposals database table, in the most correct way for a production ready software.
+- Let's prepare for the next move by adding a new column called "html_document" to the proposals database table, this column is important because we'll have to load a default html document template when a fresh new proposal record is added. I'll later give you the html template to be loaded as default, also because this template document will have placeholders that will be replaced with the data of the proposal record.
+
+# 4) Finish to develop kanban tab "Contratti", entity name "contracts":
+NOTE: this note I'm giving to you is very critical, as you will notice the fields that should be inside the modal to add a new contract are practically the same of the ones available in the modal to add a new proposal, some labels will change. But is important that the data is saved inside the "contracts" database table.
+
+- Add the fields you see in the screenshot "documentation/kanbans/old/contratti_kanban_modal.png" to the modal to add a new contract inside the kanban for "Contratti"
+- Take into consideration those notes about the fields of the modal to add a new contract:
+    - "Tipo di contratto" (react select field) and the fields you can select are: "Sublocazione", "Abitativo a canone libero", "Abitativo a canone concordato", "Transitorio per lavoratori", "Transitorio per studenti". Add a proper select value placeholder or "Seleziona tipo di proposta" placeholder.
+    - "Data inizio" (flatpickr only date field) to select a start date
+    - "Data fine" (flatpickr only date field) to select an end date
+    - "Tipo immobile" (react select field) here you can select one of the two main entities about real estate inside this CRM:
+        - "Stanza" or rooms, as you can see is an entity inside this project
+        - "Immobile" or properties, as you can see is an entity inside this project
+        - DEVELOPING THIS FIELD IS IMPORTANT TO: Keep "stanza" selected as default starting value.
+        - DEVELOPING THIS FIELD IS IMPORTANT TO: Based on the selected option for this field, the next field ("Codice stanza" | "Codice immobile") will load data in a different way and the feature is described next.
+    - "Codice stanza" | "Codice immobile" (react select field) this field is critical: based on the selected entity in "Tipo immobile" field here you'll see the list of all the available properties if you selected "Immobile" in "Tipo immobile" or the list of all the rooms available if you selected "Stanza" in "Tipo immobile"
+    - "Mesi di preavviso" (number field)
+    - "Giorni per la restituzione della caparra" (number field)
+    - "Data invio" (date time field) also this field is critical because it must be present as data for each contract in the column of the database table for contracts, but it should correspond to the timestamp when a contract is inserted into the database. So it should be handled by the backend and database only and not be shown in the modal as a field.
+    - "Cliente 1" can be also named "Inquilino 1" (react select field) this is another critical field that is very very important: when creating a contract you can assign a max of two clients to a contract for a room or a property. So here should be listed all the available clients in the CRM and you can select one of them.
+    - "Cliente 2" can be also named "Inquilino 2" (react select field) this is the field where you can select the second client for the current contract. So this field should not be selectable if you did not select the first client. After selecting the first client, you can use this field where you'll see a list of all available clients except the one you selected in the field "Cliente 1" or "Inquilino 1".
+    - "Importo caparra" (number field)
+    - "Spese ingresso" (number field)
+    - "Canone mensile" (number field)
+    - "Giorni di validità" (number field) with default value equal to "2"
+    - "Rateizzazione" (field group) this field is very very critical and must be implemented perfectly also with the underlying database structure that will be modified for contracts entity. This field group must have, with the best UX/UI and UX features, all the 12 payment fields grouped in a 4 columns. Each month should have two fields: one to select the month where that payment should be done by the selected client or clients (and this field should be a flatpickr date only field) and the other one to insert the amount to be paid (and this field should be a number field). Now also the process of saving this data in the database is critical: this because we have a structured data with 12 elements which each one of them has two values (one a date and the second is a number). I was thinking in having a database column for the contract table called "installments_json" where we store all the 12 installments in the JSON format, that we'll encode and decode for each future edit of the single contract, because they can be edited in the future when clicking an item in the contracts kanban. Inside this json data structure I also need an hidden field for each of the 12 installments called "is_payment_completed" with true or false possible values. This will be used by me in the future to continue developing this part of the software [YOU SHOULD ALREADY HAVE THE REACT COMPONENT TO SHOW A FIELD LIKE THIS ONE].
+- The button to save and add a new contract should be labeled with "Genera contratto"
+- The button to edit and update an exisiting contract should be labeled with "Modifica contratto"
+- When you click a single item inside the kanban you can modify the contract loading its data inside the modal, this is very important. Carefully load the installment data for each field in the installments field group, this is very important for a production ready software. Take all your time to develop this part as a real and powerful senior software engineer. I need this part completely production ready.
+- Be sure that the contracts database table correctly represent the fields listed here and that each data field will find its place in the contracts database table, in the most correct way for a production ready software.
+- Let's prepare for the next move by adding a new column called "html_document" to the contracts database table, this column is important because we'll have to load a default html document template when a fresh new contract record is added. I'll later give you the html template to be loaded as default, also because this template document will have placeholders that will be replaced with the data of the contract record.

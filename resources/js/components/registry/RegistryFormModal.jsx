@@ -4,6 +4,7 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
 import DatePicker from '../ui/DatePicker';
+import InstallmentsFieldGroup from '../ui/InstallmentsFieldGroup';
 import api from '../../services/api';
 import DateUtil from '../../utils/date';
 import { viewDocument, getEntityTypeSlug } from '../../utils/documentViewer';
@@ -222,9 +223,20 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
      * Render a form field based on configuration
      */
     const renderField = (field) => {
+        // Check showWhen condition - skip rendering if condition not met
+        if (field.showWhen && !field.showWhen(formData)) {
+            return null;
+        }
+
         // Check if this field has dynamic options loaded from API
         const isDynamicSelect = field.loadFrom && dynamicOptions[field.key];
-        const fieldOptions = isDynamicSelect ? dynamicOptions[field.key] : field.options;
+        let fieldOptions = isDynamicSelect ? dynamicOptions[field.key] : field.options;
+
+        // Handle excludeValue - filter out specific value from options
+        if (field.excludeValue && formData[field.excludeValue] && fieldOptions) {
+            const excludedId = formData[field.excludeValue];
+            fieldOptions = fieldOptions.filter(opt => opt.value !== excludedId);
+        }
 
         return (
             <div key={field.key} className="mb-4">
@@ -341,6 +353,12 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
                         disabled={saving}
                         className={errors[field.key] ? 'border-red-500' : ''}
                     />
+                ) : field.type === 'installments' ? (
+                    <InstallmentsFieldGroup
+                        value={formData[field.key] || (typeof field.defaultValue === 'function' ? field.defaultValue() : [])}
+                        onChange={(installments) => handleChange(field.key, installments)}
+                        disabled={saving}
+                    />
                 ) : (
                     <Input
                         type={field.type || 'text'}
@@ -377,16 +395,16 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
                         </div>
                     ) : (
                         <>
-                            {/* Grid fields (all fields except textarea and file) */}
+                            {/* Grid fields (all fields except textarea, file, and installments) */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {config.formFields
-                                    .filter((field) => field.type !== 'textarea' && field.type !== 'file')
+                                    .filter((field) => field.type !== 'textarea' && field.type !== 'file' && field.type !== 'installments')
                                     .map((field) => renderField(field))}
                             </div>
 
-                            {/* Full-width textarea and file fields at the bottom */}
+                            {/* Full-width complex fields (textarea, file, installments) at the bottom */}
                             {config.formFields
-                                .filter((field) => field.type === 'textarea' || field.type === 'file')
+                                .filter((field) => field.type === 'textarea' || field.type === 'file' || field.type === 'installments')
                                 .map((field) => (
                                     <div key={field.key} className="mt-4">
                                         {renderField(field)}

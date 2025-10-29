@@ -26,11 +26,16 @@ class Contract extends Model
         'start_date',
         'end_date',
         'cancellation_notice_months',
+        'deposit_return_days',
+        'sent_at',
         'monthly_rent',
         'deposit_amount',
         'entry_fee',
+        'validity_days',
         'deposit_refund_percentage',
+        'installments_json',
         'html_content',
+        'html_document',
         'pdf_path',
         'origin',
     ];
@@ -40,11 +45,15 @@ class Contract extends Model
         'sequential_number' => 'integer',
         'start_date' => 'date',
         'end_date' => 'date',
+        'sent_at' => 'datetime',
         'cancellation_notice_months' => 'integer',
+        'deposit_return_days' => 'integer',
+        'validity_days' => 'integer',
         'monthly_rent' => 'decimal:2',
         'deposit_amount' => 'decimal:2',
         'entry_fee' => 'decimal:2',
         'deposit_refund_percentage' => 'integer',
+        'installments_json' => 'array', // JSON casting for 12 installments
     ];
 
     // Relationships

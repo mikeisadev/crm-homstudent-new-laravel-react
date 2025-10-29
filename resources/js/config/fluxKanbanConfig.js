@@ -14,6 +14,8 @@
  */
 
 import { CONTRACT_TYPES, MANAGERS, OPERATIONAL_STATUS } from '../data/managementContractConstants';
+import { PROPOSAL_TYPES, PROPERTY_TYPES, PROPOSAL_STATUSES, generateDefaultInstallments } from '../data/proposalConstants';
+import { CONTRACT_TYPES as CONT_TYPES, PROPERTY_TYPES as CONT_PROPERTY_TYPES, CONTRACT_STATUSES, generateDefaultInstallments as generateContractInstallments } from '../data/contractConstants';
 
 /**
  * Management Contracts (Contratti di gestione) Configuration
@@ -298,7 +300,8 @@ export const proposalsConfig = {
                 label: '',
                 format: (value, item) => {
                     if (item.client) {
-                        return `${item.client.name} ${item.client.surname || ''}`.trim();
+                        const fullName = `${item.client.first_name || ''} ${item.client.last_name || ''}`.trim();
+                        return fullName || item.client.company_name || '-';
                     }
                     return '-';
                 }
@@ -316,8 +319,153 @@ export const proposalsConfig = {
         ]
     },
 
-    // Form fields for modal (will be populated later by user)
-    formFields: []
+    // Form fields for modal
+    formFields: [
+        {
+            key: 'proposal_type',
+            label: 'Tipo di proposta',
+            type: 'select',
+            required: true,
+            options: PROPOSAL_TYPES,
+            placeholder: 'Seleziona tipo di proposta',
+        },
+        {
+            key: 'proposed_start_date',
+            label: 'Data inizio',
+            type: 'date',
+            required: true,
+            placeholder: 'gg/mm/aaaa',
+        },
+        {
+            key: 'proposed_end_date',
+            label: 'Data fine',
+            type: 'date',
+            required: false,
+            placeholder: 'gg/mm/aaaa',
+        },
+        {
+            key: 'property_type',
+            label: 'Tipo immobile',
+            type: 'select',
+            required: true,
+            options: PROPERTY_TYPES,
+            defaultValue: 'room', // Default to "Stanza"
+            placeholder: 'Seleziona tipo immobile',
+        },
+        {
+            key: 'room_id',
+            label: 'Codice stanza',
+            type: 'select',
+            required: false,
+            loadFrom: '/rooms',
+            optionLabel: (item) => item.internal_code || item.name || `Stanza ${item.id}`,
+            placeholder: 'Seleziona stanza',
+            dependsOn: 'property_type', // Show when property_type === 'room'
+            showWhen: (formData) => formData.property_type === 'room',
+        },
+        {
+            key: 'property_id',
+            label: 'Codice immobile',
+            type: 'select',
+            required: false,
+            loadFrom: '/properties',
+            optionLabel: (item) => item.internal_code || item.name || `Immobile ${item.id}`,
+            placeholder: 'Seleziona immobile',
+            dependsOn: 'property_type', // Show when property_type === 'property'
+            showWhen: (formData) => formData.property_type === 'property',
+        },
+        {
+            key: 'notice_months',
+            label: 'Mesi di preavviso',
+            type: 'number',
+            required: false,
+            placeholder: '0',
+        },
+        {
+            key: 'deposit_return_days',
+            label: 'Giorni per la restituzione della caparra',
+            type: 'number',
+            required: false,
+            placeholder: '0',
+        },
+        {
+            key: 'client_id',
+            label: 'Cliente 1 / Inquilino 1',
+            type: 'select',
+            required: true,
+            loadFrom: '/clients',
+            optionLabel: (item) => {
+                const fullName = `${item.first_name || ''} ${item.last_name || ''}`.trim();
+                return fullName || item.company_name || `Cliente ${item.id}`;
+            },
+            placeholder: 'Seleziona cliente',
+        },
+        {
+            key: 'secondary_client_id',
+            label: 'Cliente 2 / Inquilino 2',
+            type: 'select',
+            required: false,
+            loadFrom: '/clients',
+            optionLabel: (item) => {
+                const fullName = `${item.first_name || ''} ${item.last_name || ''}`.trim();
+                return fullName || item.company_name || `Cliente ${item.id}`;
+            },
+            placeholder: 'Seleziona secondo cliente (opzionale)',
+            dependsOn: 'client_id', // Only enabled if client_id is selected
+            excludeValue: 'client_id', // Exclude the value from client_id field
+        },
+        {
+            key: 'deposit_amount',
+            label: 'Importo caparra',
+            type: 'number',
+            required: false,
+            placeholder: '0.00',
+            step: '0.01',
+        },
+        {
+            key: 'entry_fee',
+            label: 'Spese ingresso',
+            type: 'number',
+            required: false,
+            placeholder: '0.00',
+            step: '0.01',
+        },
+        {
+            key: 'monthly_rent',
+            label: 'Canone mensile',
+            type: 'number',
+            required: false,
+            placeholder: '0.00',
+            step: '0.01',
+        },
+        {
+            key: 'validity_days',
+            label: 'Giorni di validità',
+            type: 'number',
+            required: false,
+            defaultValue: 2, // Default value is 2
+            placeholder: '2',
+        },
+        {
+            key: 'installments_json',
+            label: '',
+            type: 'installments', // Special field type for 12 installments
+            required: false,
+            defaultValue: () => generateDefaultInstallments(), // Generate 12 empty installments
+        },
+        {
+            key: 'status',
+            label: 'Stato',
+            type: 'select',
+            required: true,
+            options: PROPOSAL_STATUSES,
+            placeholder: 'Seleziona stato',
+        },
+    ],
+
+    // Custom button labels for create/edit actions
+    createButtonLabel: 'Genera proposta',
+    editButtonLabel: 'Modifica proposta',
 };
 
 /**
@@ -419,7 +567,8 @@ export const contractsConfig = {
                 label: '',
                 format: (value, item) => {
                     if (item.client) {
-                        return `${item.client.name} ${item.client.surname || ''}`.trim();
+                        const fullName = `${item.client.first_name || ''} ${item.client.last_name || ''}`.trim();
+                        return fullName || item.client.company_name || '-';
                     }
                     return '-';
                 }
@@ -437,8 +586,153 @@ export const contractsConfig = {
         ]
     },
 
-    // Form fields for modal (will be populated later by user)
-    formFields: []
+    // Form fields for modal
+    formFields: [
+        {
+            key: 'contract_type',
+            label: 'Tipo di contratto',
+            type: 'select',
+            required: true,
+            options: CONT_TYPES,
+            placeholder: 'Seleziona tipo di contratto',
+        },
+        {
+            key: 'start_date',
+            label: 'Data inizio',
+            type: 'date',
+            required: true,
+            placeholder: 'gg/mm/aaaa',
+        },
+        {
+            key: 'end_date',
+            label: 'Data fine',
+            type: 'date',
+            required: false,
+            placeholder: 'gg/mm/aaaa',
+        },
+        {
+            key: 'property_type',
+            label: 'Tipo immobile',
+            type: 'select',
+            required: true,
+            options: CONT_PROPERTY_TYPES,
+            defaultValue: 'room', // Default to "Stanza"
+            placeholder: 'Seleziona tipo immobile',
+        },
+        {
+            key: 'room_id',
+            label: 'Codice stanza',
+            type: 'select',
+            required: false,
+            loadFrom: '/rooms',
+            optionLabel: (item) => item.internal_code || item.name || `Stanza ${item.id}`,
+            placeholder: 'Seleziona stanza',
+            dependsOn: 'property_type', // Show when property_type === 'room'
+            showWhen: (formData) => formData.property_type === 'room',
+        },
+        {
+            key: 'property_id',
+            label: 'Codice immobile',
+            type: 'select',
+            required: false,
+            loadFrom: '/properties',
+            optionLabel: (item) => item.internal_code || item.name || `Immobile ${item.id}`,
+            placeholder: 'Seleziona immobile',
+            dependsOn: 'property_type', // Show when property_type === 'property'
+            showWhen: (formData) => formData.property_type === 'property',
+        },
+        {
+            key: 'cancellation_notice_months',
+            label: 'Mesi di preavviso',
+            type: 'number',
+            required: false,
+            placeholder: '0',
+        },
+        {
+            key: 'deposit_return_days',
+            label: 'Giorni per la restituzione della caparra',
+            type: 'number',
+            required: false,
+            placeholder: '0',
+        },
+        {
+            key: 'client_id',
+            label: 'Cliente 1 / Inquilino 1',
+            type: 'select',
+            required: true,
+            loadFrom: '/clients',
+            optionLabel: (item) => {
+                const fullName = `${item.first_name || ''} ${item.last_name || ''}`.trim();
+                return fullName || item.company_name || `Cliente ${item.id}`;
+            },
+            placeholder: 'Seleziona cliente',
+        },
+        {
+            key: 'secondary_client_id',
+            label: 'Cliente 2 / Inquilino 2',
+            type: 'select',
+            required: false,
+            loadFrom: '/clients',
+            optionLabel: (item) => {
+                const fullName = `${item.first_name || ''} ${item.last_name || ''}`.trim();
+                return fullName || item.company_name || `Cliente ${item.id}`;
+            },
+            placeholder: 'Seleziona secondo cliente (opzionale)',
+            dependsOn: 'client_id', // Only enabled if client_id is selected
+            excludeValue: 'client_id', // Exclude the value from client_id field
+        },
+        {
+            key: 'deposit_amount',
+            label: 'Importo caparra',
+            type: 'number',
+            required: false,
+            placeholder: '0.00',
+            step: '0.01',
+        },
+        {
+            key: 'entry_fee',
+            label: 'Spese ingresso',
+            type: 'number',
+            required: false,
+            placeholder: '0.00',
+            step: '0.01',
+        },
+        {
+            key: 'monthly_rent',
+            label: 'Canone mensile',
+            type: 'number',
+            required: false,
+            placeholder: '0.00',
+            step: '0.01',
+        },
+        {
+            key: 'validity_days',
+            label: 'Giorni di validità',
+            type: 'number',
+            required: false,
+            defaultValue: 2, // Default value is 2
+            placeholder: '2',
+        },
+        {
+            key: 'installments_json',
+            label: '',
+            type: 'installments', // Special field type for 12 installments
+            required: false,
+            defaultValue: () => generateContractInstallments(), // Generate 12 empty installments
+        },
+        {
+            key: 'status',
+            label: 'Stato',
+            type: 'select',
+            required: true,
+            options: CONTRACT_STATUSES,
+            placeholder: 'Seleziona stato',
+        },
+    ],
+
+    // Custom button labels for create/edit actions
+    createButtonLabel: 'Genera contratto',
+    editButtonLabel: 'Modifica contratto',
 };
 
 /**

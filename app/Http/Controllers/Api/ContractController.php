@@ -17,7 +17,7 @@ class ContractController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Contract::query();
+            $query = Contract::with(['client', 'secondaryClient', 'property', 'room', 'condominium']);
 
             if ($request->has('client_id')) {
                 $query->where('client_id', $request->input('client_id'));
@@ -55,6 +55,7 @@ class ContractController extends Controller
             ], 'Contratti recuperati con successo');
 
         } catch (\Exception $e) {
+            \Log::error('Error fetching contracts: ' . $e->getMessage());
             return $this->error('Errore nel recupero dei contratti', 500);
         }
     }
@@ -64,18 +65,27 @@ class ContractController extends Controller
         try {
             $data = $request->validated();
 
-            // Generate contract number
-            $year = date('Y');
-            $lastContract = Contract::where('year', $year)->orderBy('sequential_number', 'desc')->first();
-            $sequentialNumber = $lastContract ? $lastContract->sequential_number + 1 : 1;
+            // Generate contract number if not provided
+            if (empty($data['contract_number'])) {
+                $year = date('Y');
+                $lastContract = Contract::where('year', $year)->orderBy('sequential_number', 'desc')->first();
+                $sequentialNumber = $lastContract ? $lastContract->sequential_number + 1 : 1;
 
-            $data['year'] = $year;
-            $data['sequential_number'] = $sequentialNumber;
-            $data['contract_number'] = sprintf('%d-%04d', $year, $sequentialNumber);
+                $data['year'] = $year;
+                $data['sequential_number'] = $sequentialNumber;
+                $data['contract_number'] = sprintf('%d-%04d', $year, $sequentialNumber);
+            }
 
+            // Create contract with all data including installments_json
+            // Laravel will automatically cast installments_json array to JSON
             $contract = Contract::create($data);
+
+            // Load relationships for response
+            $contract->load(['client', 'secondaryClient', 'property', 'room', 'condominium']);
+
             return $this->success(new ContractResource($contract), 'Contratto creato con successo', 201);
         } catch (\Exception $e) {
+            \Log::error('Error creating contract: ' . $e->getMessage());
             return $this->error('Errore nella creazione del contratto: ' . $e->getMessage(), 500);
         }
     }
@@ -102,9 +112,17 @@ class ContractController extends Controller
     {
         try {
             $contract = Contract::findOrFail($id);
+
+            // Update contract with all data including installments_json
+            // Laravel will automatically cast installments_json array to JSON
             $contract->update($request->validated());
-            return $this->success(new ContractResource($contract->fresh()), 'Contratto aggiornato con successo');
+
+            // Reload with relationships
+            $contract->load(['client', 'secondaryClient', 'property', 'room', 'condominium']);
+
+            return $this->success(new ContractResource($contract->fresh(['client', 'secondaryClient', 'property', 'room', 'condominium'])), 'Contratto aggiornato con successo');
         } catch (\Exception $e) {
+            \Log::error('Error updating contract: ' . $e->getMessage());
             return $this->error('Errore nell\'aggiornamento del contratto', 500);
         }
     }
