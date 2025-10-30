@@ -97,7 +97,7 @@ I'll give you indications on the fields you'll have to add for each kanban modal
 - Be sure that the proposals database table correctly represent the fields listed here and that each data field will find its place in the proposals database table, in the most correct way for a production ready software.
 - Let's prepare for the next move by adding a new column called "html_document" to the proposals database table, this column is important because we'll have to load a default html document template when a fresh new proposal record is added. I'll later give you the html template to be loaded as default, also because this template document will have placeholders that will be replaced with the data of the proposal record.
 
-# 4) Finish to develop kanban tab "Contratti", entity name "contracts":
+# 4) Finish to develop kanban tab "Contratti", entity name "contracts" [DONE]:
 NOTE: this note I'm giving to you is very critical, as you will notice the fields that should be inside the modal to add a new contract are practically the same of the ones available in the modal to add a new proposal, some labels will change. But is important that the data is saved inside the "contracts" database table.
 
 - Add the fields you see in the screenshot "documentation/kanbans/old/contratti_kanban_modal.png" to the modal to add a new contract inside the kanban for "Contratti"

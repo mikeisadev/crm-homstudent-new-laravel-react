@@ -451,12 +451,12 @@ export default function RegistryDetails({ config, item, onEdit, onDelete, onUpda
                             (() => {
                                 // Get options: either dynamic (from API) or static (from config)
                                 const isDynamic = field.loadFrom && dynamicOptions[field.key];
-                                const fieldOptions = isDynamic ? dynamicOptions[field.key] : field.options;
+                                const fieldOptions = isDynamic ? dynamicOptions[field.key] : (field.options || []);
 
                                 return (
                                     <Select
-                                        options={fieldOptions || []}
-                                        value={fieldOptions?.find(opt => opt.value == editValue) || null}
+                                        options={fieldOptions}
+                                        value={fieldOptions.find(opt => opt.value == editValue) || null}
                                         onChange={(selectedOption) => {
                                             const newValue = selectedOption?.value || '';
                                             if (isGlobalEditMode) {

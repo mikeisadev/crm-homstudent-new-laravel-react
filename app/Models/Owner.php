@@ -21,6 +21,7 @@ class Owner extends Model
         'phone',
         'mobile',
         'address',
+        'street_number',
         'city',
         'province',
         'postal_code',

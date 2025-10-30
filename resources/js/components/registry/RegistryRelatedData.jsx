@@ -23,6 +23,11 @@ export default function RegistryRelatedData({ config, item }) {
      * Render tab content using dynamic renderer
      */
     const renderTabContent = () => {
+        // Safety check: if no tabs defined, return null
+        if (!config.tabs || config.tabs.length === 0) {
+            return null;
+        }
+
         const activeTabConfig = config.tabs.find(t => t.key === activeTab);
 
         if (!activeTabConfig) {
@@ -59,6 +64,20 @@ export default function RegistryRelatedData({ config, item }) {
             </div>
         );
     };
+
+    // No tabs defined - render empty state
+    if (!config.tabs || config.tabs.length === 0) {
+        return (
+            <div className="flex flex-col h-full bg-gray-50">
+                <div className="flex items-center justify-center h-full text-gray-400">
+                    <div className="text-center">
+                        <i className="material-icons text-6xl mb-4">folder_off</i>
+                        <p>Nessun dato correlato disponibile</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // Empty state
     if (!item) {

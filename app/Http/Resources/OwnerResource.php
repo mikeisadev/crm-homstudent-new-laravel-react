@@ -27,6 +27,7 @@ class OwnerResource extends JsonResource
             'phone' => $this->phone,
             'mobile' => $this->mobile,
             'address' => $this->address,
+            'street_number' => $this->street_number,
             'city' => $this->city,
             'province' => $this->province,
             'postal_code' => $this->postal_code,
