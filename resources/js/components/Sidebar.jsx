@@ -1,11 +1,16 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 
 export default function Sidebar({ isOpen, setIsOpen }) {
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useTranslation();
+
+    const toast = useToast();
+    const { logout } = useAuth();
 
     const menuItems = [
         { path: '/dashboard', label: t('menu.home'), icon: 'home' },
