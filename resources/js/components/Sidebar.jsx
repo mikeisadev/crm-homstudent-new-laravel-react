@@ -59,6 +59,17 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         </div>
     );
 
+    const handleLogout = async () => {
+        try {
+            await logout();
+            toast.success('Disconnessione effettuata con successo');
+            navigate('/login', { replace: true });
+        } catch (error) {
+            console.error('Errore durante il logout:', error);
+            toast.error('Errore durante la disconnessione');
+        }
+    };
+
     return (
         <div className="menusinistra" style={{ transition: 'width 0.5s', width: isOpen ? '200px' : '60px', minWidth: isOpen ? '200px' : '60px' }}>
             <div className="menu-header" style={{ gridTemplateColumns: '100%', marginTop: '10px', display: isOpen ? 'inline-grid' : 'none', alignItems: 'center', width: '100%' }}>
@@ -93,7 +104,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                 <div className="circle-btn shrink-icon" onClick={() => setIsOpen(!isOpen)}>
                     <span className="material-symbols-outlined">list</span>
                 </div>
-                <div className="circle-btn logout-icon" onClick={() => window.location.href = '/logout'}>
+                <div className="circle-btn logout-icon" onClick={handleLogout}>
                     <span className="material-symbols-outlined">logout</span>
                 </div>
             </div>
