@@ -46,7 +46,7 @@ export default function OnboardingModal({ onComplete }) {
     const isLastSlide = currentSlide === slides.length - 1;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 overflow-hidden animate-fadeIn">
                 {/* Modal Header */}
                 <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">

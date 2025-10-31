@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import MMBrand from '../MMBrand';
 
 /**
  * OnboardingLoader Component
@@ -99,6 +100,8 @@ export default function OnboardingLoader({ onComplete }) {
                         {Math.round(progress)}%
                     </p>
                 </div>
+
+                <MMBrand textWhite={true} />
             </div>
         </div>
     );

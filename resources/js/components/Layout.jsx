@@ -6,6 +6,8 @@ import { useToast } from '../contexts/ToastContext';
 import { useOnboarding } from '../hooks/useOnboarding';
 import Sidebar from './Sidebar';
 import Onboarding from './onboarding/Onboarding';
+import BugReportButton from './bugReport/BugReportButton';
+import RestartOnboardingButton from './onboarding/RestartOnboardingButton';
 
 export default function Layout() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -107,6 +109,10 @@ export default function Layout() {
             {!isOnboardingCompleted && (
                 <Onboarding onComplete={completeOnboarding} />
             )}
+
+            {/* Floating Action Buttons - Bottom Right Corner */}
+            <RestartOnboardingButton />
+            <BugReportButton />
         </div>
     );
 }

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import MMBrand from '../MMBrand';
 
 /**
  * WelcomeScreen Component
@@ -31,7 +32,7 @@ export default function WelcomeScreen({ onComplete }) {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm cursor-pointer"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm cursor-pointer"
             onClick={onComplete}
         >
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 px-12 py-16 text-center animate-fadeIn">
@@ -69,6 +70,9 @@ export default function WelcomeScreen({ onComplete }) {
                         ))}
                     </div>
                 </div>
+
+                {/** Michele Mincone branding */}
+                <MMBrand textWhite={true} showTech={false} />
 
                 {/* Close hint */}
                 <div className="mt-8">

@@ -276,6 +276,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/report/{id}', [CalendarController::class, 'deleteReport']);
     });
 
+    // Bug Reports
+    Route::post('/bug-reports', [App\Http\Controllers\Api\BugReportController::class, 'store']);
+    Route::get('/bug-reports', [App\Http\Controllers\Api\BugReportController::class, 'index']); // For future admin panel
+
     // Legacy user endpoint (for backward compatibility)
     Route::get('/user', function (Request $request) {
         return $request->user();

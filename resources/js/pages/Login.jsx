@@ -5,6 +5,7 @@ import { useToast } from '../contexts/ToastContext';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Alert from '../components/ui/Alert';
+import MMBrand from '../components/MMBrand';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -149,10 +150,7 @@ export default function Login() {
                 </div>
             </div>
 
-            <div className="p4 mt-[50px]">
-                <img src="https://michelemincone.com/wp-content/uploads/2025/10/michelemincone_new_logo_alphachannel.png" alt="Michele Mincone Logo" className="h-6 mx-auto mb-2" style={{height: 40}} />
-                <p className='mt-4 w-full text-center'>Software CRM realizzato da <b className="font-bold">Michele Mincone</b>.<br/>Stack software: <em>PHP 8.4</em>, <em>Laravel 11</em>, <em>React 18</em>, <em>Tailwind CSS 3</em>, <em>MariaDB 10.6</em></p>
-            </div>
+            <MMBrand />
         </div>
     );
 }
