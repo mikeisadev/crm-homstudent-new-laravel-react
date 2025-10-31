@@ -91,7 +91,7 @@ class DashboardController extends Controller
         $totalDepositAmount = Deposit::sum('amount') ?? 0;
 
         $totalPenalties = Penalty::count();
-        $totalPenaltyAmount = Penalty::sum('penalty_amount') ?? 0;
+        $totalPenaltyAmount = Penalty::sum('amount') ?? 0;
 
         return [
             'invoices' => [
@@ -176,7 +176,7 @@ class DashboardController extends Controller
         $next30Days = Carbon::now()->addDays(30);
 
         // Upcoming maintenances (next 7 days)
-        $upcomingMaintenances = CalendarMaintenance::whereBetween('scheduled_date', [$now, $next7Days])
+        $upcomingMaintenances = CalendarMaintenance::whereBetween('start_date', [$now, $next7Days])
             ->count();
 
         // Upcoming check-ins (next 7 days)
@@ -188,7 +188,7 @@ class DashboardController extends Controller
             ->count();
 
         // Next 30 days
-        $maintenancesNext30 = CalendarMaintenance::whereBetween('scheduled_date', [$now, $next30Days])
+        $maintenancesNext30 = CalendarMaintenance::whereBetween('start_date', [$now, $next30Days])
             ->count();
         $checkinsNext30 = CalendarCheckin::whereBetween('checkin_date', [$now, $next30Days])
             ->count();

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CondominiumController;
 use App\Http\Controllers\Api\CondominiumDocumentController;
 use App\Http\Controllers\Api\CondominiumPhotoController;
 use App\Http\Controllers\Api\ContractController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\DepositController;
 use App\Http\Controllers\Api\EquipmentController;
@@ -47,6 +48,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Authentication endpoints
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+
+    // Dashboard metrics
+    Route::get('/dashboard/metrics', [DashboardController::class, 'index']);
 
     // Client resources
     Route::apiResource('clients', ClientController::class);
