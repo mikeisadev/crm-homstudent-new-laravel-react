@@ -1,4 +1,4 @@
-# Development overview
+# Development overview [DONE]
 - Focus on developing clean, modular, maintainable, secure and not redundant code like a SENIOR SOFTWARE ENGINEER
 - Use proper data structure and React components properly to do the job
 - Reanalyze the entire frontend codebase if needed.

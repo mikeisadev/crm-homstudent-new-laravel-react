@@ -5741,3 +5741,450 @@ Custom button labels: "Genera contratto" / "Modifica contratto"
 **End of Session 7 - All Three Kanbans Complete** 📊✅🎉
 
 ---
+
+# 🎉 CHECKPOINT: Onboarding Experience Complete
+
+**Date**: October 31, 2025
+**Session**: Post-Login Onboarding Implementation
+
+## 📋 Feature Overview
+
+Implemented a comprehensive **3-phase onboarding experience** that runs after user login (only once per user):
+1. **Loading Screen** - 4.5 seconds animated data loader
+2. **Tutorial Modal** - 3-slide interactive guide
+3. **Welcome Screen** - 5-second animated welcome or click to skip
+
+## ✅ Implementation Summary
+
+### Phase 1: Loading Screen (OnboardingLoader)
+- **File**: `resources/js/components/onboarding/OnboardingLoader.jsx`
+- **Duration**: 4.5 seconds total
+- **Features**:
+  - Full-screen gradient background (blue-600 to blue-800)
+  - CRM HomStudent logo with business icon
+  - Smooth progress bar (0-100%)
+  - Sequential loading messages (6 steps, ~750ms each):
+    1. "Caricamento in corso dei dati del CRM"
+    2. "Caricamento degli eventi del calendario"
+    3. "Caricamento delle anagrafiche con condomini, immobili, stanze e clienti"
+    4. "Caricamento del flusso dei contratti"
+    5. "Caricamento dei proprietari e dei fornitori"
+    6. "Caricamento dei dati di gestione: caparre, disdette, bollette e sanzioni"
+  - Percentage counter display
+  - Pulsating text animation
+  - Fixed positioning (z-index 9999)
+
+### Phase 2: Tutorial Modal (OnboardingModal)
+- **File**: `resources/js/components/onboarding/OnboardingModal.jsx`
+- **Slides**: 3 interactive slides
+- **Features**:
+  - Step indicators (1/3, 2/3, 3/3)
+  - Material Icons for visual guidance
+  - Navigation buttons (Avanti/Indietro)
+  - Last slide: "Inizia" button
+  - Non-dismissible (no X button)
+  - Smooth slide transitions
+  - Full-screen modal overlay
+
+**Slide Content**:
+1. **Slide 1**: Overview of CRM sections (Calendar, Anagrafica, Gestion, etc.)
+2. **Slide 2**: How to use the registry system and related tabs
+3. **Slide 3**: Tips for managing contracts, proposals, and documents
+
+### Phase 3: Welcome Screen (WelcomeScreen)
+- **File**: `resources/js/components/onboarding/WelcomeScreen.jsx`
+- **Duration**: 5 seconds (auto-dismiss) or click to skip
+- **Features**:
+  - Animated welcome message with fade-in effect
+  - "Benvenuto in CRM HomStudent"
+  - Countdown timer (5...4...3...2...1)
+  - Click anywhere to skip
+  - Full-screen centered layout
+  - Smooth fade-out transition
+
+### State Management
+
+#### Custom Hook (useOnboarding)
+- **File**: `resources/js/hooks/useOnboarding.js`
+- **Persistence**: localStorage with key `crm_homstudent_onboarding_completed`
+- **Functions**:
+  - `isOnboardingCompleted` - Boolean state
+  - `completeOnboarding()` - Marks as completed
+  - `resetOnboarding()` - For testing/re-onboarding
+- **Initialization**: Checks localStorage on mount
+
+#### Main Orchestrator (Onboarding)
+- **File**: `resources/js/components/onboarding/Onboarding.jsx`
+- **Flow Management**: Controls 3-phase sequence
+- **Phase States**: 'loading' → 'modal' → 'welcome'
+- **Callback Pattern**: Each phase triggers next on completion
+
+### Integration
+
+#### Layout Integration
+- **File**: `resources/js/components/Layout.jsx`
+- **Logic**:
+  - Checks `useOnboarding` hook on mount
+  - Shows onboarding if not completed
+  - Blocks main UI until onboarding done
+  - Calls `completeOnboarding()` when finished
+- **Conditional Rendering**:
+  ```jsx
+  {!isOnboardingCompleted && (
+    <Onboarding onComplete={completeOnboarding} />
+  )}
+  ```
+
+## 🎨 Design & UX
+
+### Visual Design
+- **Color Scheme**: Blue gradient (600→800) matching CRM branding
+- **Typography**: Bold headings, medium body text
+- **Icons**: Material Icons throughout
+- **Animations**: Fade-ins, pulse effects, smooth transitions
+- **Spacing**: Generous padding, centered layouts
+
+### User Experience
+- **Non-intrusive**: Only shows once per user
+- **Skip Options**: Click to skip welcome screen
+- **Progress Indicators**: Progress bar, step counters, percentage
+- **Clear Navigation**: Previous/Next buttons, numbered steps
+- **Responsive**: Works on all screen sizes
+- **Accessibility**: High contrast, readable text sizes
+
+### Technical Excellence
+- **Performance**: Lightweight, no external dependencies
+- **Clean Code**: Modular components, clear separation of concerns
+- **State Management**: Simple but effective localStorage pattern
+- **Error Handling**: Graceful cleanup of intervals/timeouts
+- **Memory Management**: Proper cleanup in useEffect returns
+
+## 📊 Component Hierarchy
+
+```
+Layout.jsx (integration point)
+└── Onboarding.jsx (orchestrator)
+    ├── OnboardingLoader.jsx (Phase 1: 4.5s)
+    ├── OnboardingModal.jsx (Phase 2: user-paced)
+    └── WelcomeScreen.jsx (Phase 3: 5s or click)
+
+useOnboarding.js (state management hook)
+```
+
+## 🔧 Technical Details
+
+### Timing & Duration
+- **Total Onboarding Time**: ~15-20 seconds (if not skipped)
+- **Loading Screen**: Exactly 4.5 seconds
+- **Tutorial Modal**: User-controlled (typically 15-30 seconds)
+- **Welcome Screen**: 5 seconds or immediate skip
+
+### LocalStorage Schema
+```javascript
+{
+  "crm_homstudent_onboarding_completed": "true" | null
+}
+```
+
+### Progress Bar Algorithm
+- Updates every 50ms
+- Smooth linear progression
+- Synchronized with step messages
+- Reaches 100% at exactly 4.5 seconds
+
+## 📈 Statistics
+
+**Components Created**: 5 files
+- OnboardingLoader.jsx
+- OnboardingModal.jsx
+- WelcomeScreen.jsx
+- Onboarding.jsx
+- useOnboarding.js
+
+**Components Modified**: 1 file
+- Layout.jsx (integration)
+
+**Total Lines of Code**: ~400+
+**Build Time**: ~3s
+**Build Status**: ✅ Successful
+
+## ✅ Quality Checklist
+
+- ✅ Three-phase onboarding flow
+- ✅ Loading screen with progress bar
+- ✅ Sequential status messages
+- ✅ Multi-slide tutorial modal
+- ✅ Welcome screen with countdown
+- ✅ LocalStorage persistence
+- ✅ Custom React hook
+- ✅ Skip functionality
+- ✅ Smooth animations
+- ✅ Material Icons
+- ✅ Responsive design
+- ✅ Memory cleanup
+- ✅ Non-intrusive UX
+- ✅ Proper z-index stacking
+- ✅ Italian localization
+
+## 🎯 Key Features
+
+1. **First-Time Experience**: Shows only once per user via localStorage
+2. **Multi-Phase Flow**: Loading → Tutorial → Welcome (seamless transitions)
+3. **Progress Feedback**: Visual progress bar, percentage, and step indicators
+4. **User Control**: Skip options, navigation buttons, auto-advance
+5. **Data Loading Simulation**: Realistic 6-step loading sequence
+6. **Professional Polish**: Gradient backgrounds, smooth animations, clean UI
+
+## 🔄 Related Features
+
+- Authentication system (login triggers onboarding)
+- Layout component (main integration point)
+- CRM navigation structure (explained in tutorial)
+
+---
+
+**CHECKPOINT COMPLETE: Onboarding Experience Production-Ready** ✅🎉👋
+
+---
+
+# 🎉 CHECKPOINT: Invoices (Bollette) Feature Complete
+
+**Date**: October 31, 2025
+**Session**: Properties Registry - Bollette Tab & Main Listing
+
+## 📋 Feature Overview
+
+Implemented comprehensive **Invoices (Bollette)** management system with two contexts:
+1. **Property Related Tab** - Shows invoices for specific properties
+2. **Main Listing Page** - Shows all invoices across all properties
+
+## ✅ Implementation Summary
+
+### Backend Components
+
+#### Database Migration
+- **File**: `database/migrations/2025_10_31_103148_add_additional_fields_to_invoices_table.php`
+- Added 4 new columns:
+  - `months_competence_data` (JSON) - Stores all 12 months data
+  - `send_charge` (boolean) - Whether to send charge notification
+  - `contract_included_amount` (decimal) - Amount included in contract
+  - `amount_to_charge` (decimal) - Final amount to charge
+
+#### Models
+- **File**: `app/Models/Invoice.php`
+- Updated fillable fields and casts
+- Proper JSON casting for `months_competence_data`
+- Boolean cast for `send_charge`
+- Decimal casts for monetary fields
+
+#### Controllers
+1. **PropertyInvoiceController** (`app/Http/Controllers/Api/PropertyInvoiceController.php`)
+   - CRUD operations for property-specific invoices
+   - File upload handling with private storage
+   - Blob URL viewing: `/properties/{property}/invoices/{invoice}/view`
+   - Boolean conversion fix for `send_charge` field
+
+2. **InvoiceController** (`app/Http/Controllers/Api/InvoiceController.php`)
+   - CRUD operations for all invoices (main listing)
+   - Pagination support (10/25/50/100 per page)
+   - Search functionality across type, description, amount
+   - Property relationship loading
+   - File management with private storage pattern
+
+#### API Routes
+- **Property Context Routes**:
+  - `GET /properties/{property}/invoices` - List invoices for property
+  - `POST /properties/{property}/invoices` - Create invoice for property
+  - `PUT /properties/{property}/invoices/{invoice}` - Update invoice
+  - `DELETE /properties/{property}/invoices/{invoice}` - Delete invoice
+  - `GET /properties/{property}/invoices/{invoice}/view` - View PDF blob
+  - `GET /properties/{property}/invoices/{invoice}/download` - Download PDF
+
+- **Global Routes**:
+  - `GET /invoices` - List all invoices (paginated)
+  - `POST /invoices` - Create invoice (with property selector)
+  - `PUT /invoices/{invoice}` - Update invoice
+  - `DELETE /invoices/{invoice}` - Delete invoice
+  - `GET /invoices/{invoice}/view` - View PDF blob
+  - `GET /invoices/{invoice}/download` - Download PDF
+
+#### File Storage
+- **Pattern**: `invoice_docs/{property_id}/filename.pdf`
+- **Storage**: Private disk with authenticated access
+- **Viewing**: Blob URLs with 60-second cleanup
+
+### Frontend Components
+
+#### Constants File
+- **File**: `resources/js/data/invoiceConstants.js`
+- `INVOICE_TYPES`: 5 types (Elettrica, Gas, Internet, Utenze condominiali, Tari)
+- `SEND_CHARGE_OPTIONS`: Si/No options
+- `MONTHS_IT`: All 12 months with Italian names
+
+#### Invoice Modal (Reusable)
+- **File**: `resources/js/components/invoices/InvoiceModal.jsx`
+- **Features**:
+  - 10 fields total as per requirements
+  - Conditional property selector (shown only in main listing context)
+  - Complex "Mesi di competenza" field group:
+    - Grid layout with all 12 months always displayed
+    - Each month has: checkbox, month name, year input, amount input
+    - Auto-selection when amount is entered
+    - "Annuale" checkbox option to bypass individual months
+  - React Select for dropdowns (Property, Invoice Type, Send Charge)
+  - Flatpickr date pickers with Italian locale
+  - Modern file upload button with hidden input
+  - File confirmation indicator (green check + filename)
+  - **When editing**: Blue info card showing existing file with "Visualizza" button
+  - JSON string parsing for `months_competence_data`
+  - Proper data merge: existing data + all 12 months structure
+
+#### Property Related Tab
+- **File**: `resources/js/components/registry/tabRenderers/InvoicesTabRenderer.jsx`
+- Table listing with columns: Data Ricezione, Tipo, Importo, Da Addebitare, Scadenza, File, Azioni
+- "Carica bolletta" button
+- View/Edit/Delete actions
+- PDF viewing with blob URLs
+- Empty state with icon
+
+#### Main Listing Page
+- **File**: `resources/js/pages/Invoices.jsx`
+- Full-page listing with all invoices across properties
+- Additional "Immobile" column showing property code and name
+- Search bar (searches type, description, amount)
+- Pagination component with per-page selector
+- Same modal reused with property selector enabled
+- Sidebar navigation integration
+
+## 🔧 Technical Challenges & Solutions
+
+### Challenge 1: Boolean Conversion Error
+**Problem**: `send_charge` sent as string 'false' causing SQL integer error
+**Solution**: Added `filter_var($data['send_charge'], FILTER_VALIDATE_BOOLEAN)` in both controllers
+
+### Challenge 2: Endpoint Function Call Error
+**Problem**: InvoicesTabRenderer treating string endpoint as function
+**Solution**: Changed from `endpoint(entityId)` to direct string usage (endpoint already evaluated by parent)
+
+### Challenge 3: Months Data Not Loading on Edit
+**Problem**: `initializeMonthsData` returned existing array without merging with 12-month base structure
+**Solution**: Implemented merge logic that:
+- Creates base structure of all 12 months
+- Finds matching months by key
+- Preserves year, amount, selected from existing data
+- Ensures all 12 months always present
+
+### Challenge 4: JSON String vs Array
+**Problem**: API sometimes returns `months_competence_data` as JSON string instead of parsed array
+**Solution**: Added string detection and JSON.parse() before array processing
+
+### Challenge 5: Modal Context Awareness
+**Problem**: Same modal needed for two contexts (property-specific vs global)
+**Solution**: Conditional rendering based on `propertyId` prop:
+- If `propertyId` provided: hide property selector, use provided ID
+- If `propertyId` null: show property selector, fetch all properties
+
+## 📊 Data Structure
+
+### Months Competence Data (JSON)
+```json
+[
+  {
+    "month": "january",
+    "monthName": "Gennaio",
+    "year": 2025,
+    "amount": "100.00",
+    "selected": true
+  },
+  // ... all 12 months
+]
+```
+
+### Invoice Fields
+1. **Immobile** (property_id) - Property selector (conditional)
+2. **Tipo bolletta** (invoice_type) - React Select dropdown
+3. **Data ricezione** (issue_date) - Flatpickr date picker *
+4. **Mesi di competenza** (months_competence_data) - Complex 12-month grid
+5. **Invio addebito** (send_charge) - React Select (Si/No)
+6. **Descrizione** (description) - Textarea
+7. **Importo bolletta** (amount) - Number input
+8. **Importo incluso contratto** (contract_included_amount) - Number input
+9. **Importo da addebitare** (amount_to_charge) - Number input
+10. **Data scadenza pagamento** (due_date) - Flatpickr date picker
+11. **Carica bolletta** (file) - Modern file upload button
+
+## 🎨 UI/UX Improvements
+
+### Modern File Upload
+- Hidden file input (clean HTML)
+- Styled secondary button with upload icon
+- Dynamic button text based on state
+- Green check indicator when file selected
+- Blue info card showing existing file when editing
+- "Visualizza" button to view PDF from modal
+
+### React Select Integration
+- Enhanced dropdowns with search
+- Consistent styling with blue focus rings
+- Proper value/label structure
+- Italian labels with English keys
+
+### Responsive Design
+- 6xl modal width for complex form
+- Grid layouts for month selection (3 columns on desktop)
+- Proper spacing and borders
+- Material Icons throughout
+- Hover states on buttons
+
+## 📈 Statistics
+
+**Backend Files Created**: 1 migration
+**Backend Files Modified**: 3 (Invoice model, 2 controllers, routes)
+**Frontend Files Created**: 3 (InvoiceModal, InvoicesTabRenderer, invoiceConstants)
+**Frontend Files Modified**: 2 (Invoices page, routes)
+**Total Lines of Code**: ~1500+
+**Build Time**: ~3s
+**Build Status**: ✅ Successful
+
+## ✅ Quality Checklist
+
+- ✅ Backend CRUD operations complete
+- ✅ Frontend CRUD operations complete
+- ✅ File upload with private storage
+- ✅ Blob URL viewing (secure)
+- ✅ Pagination and search
+- ✅ React Select fields
+- ✅ Complex 12-month grid
+- ✅ JSON data parsing (string & array)
+- ✅ Proper data persistence
+- ✅ Modal reusability (two contexts)
+- ✅ Modern UI/UX patterns
+- ✅ Italian localization
+- ✅ Error handling
+- ✅ Responsive design
+- ✅ Material Icons
+- ✅ Empty states
+- ✅ Loading states
+- ✅ Confirmation dialogs
+
+## 🎯 Key Features
+
+1. **Dual Context Support**: Same modal works for property-specific and global contexts
+2. **Complex Month Management**: All 12 months with individual amounts and years
+3. **Smart Data Handling**: Parses both JSON strings and arrays from API
+4. **Modern File UX**: Hidden input with styled button, file preview, view from modal
+5. **Search & Pagination**: Full-featured listing with customizable per-page
+6. **Secure File Access**: Private storage with blob URLs and authentication
+
+## 🔄 Related Features
+
+- Properties Registry Tab
+- Property Management System
+- Document Management (similar file patterns)
+- Photo Management (similar upload UX)
+
+---
+
+**CHECKPOINT COMPLETE: Invoices Feature Production-Ready** ✅🎉📄
+
+---

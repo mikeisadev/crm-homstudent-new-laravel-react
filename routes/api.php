@@ -12,12 +12,14 @@ use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\DepositController;
 use App\Http\Controllers\Api\EquipmentController;
 use App\Http\Controllers\Api\FolderController;
+use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\OwnerController;
 use App\Http\Controllers\Api\PenaltyController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\PropertyDocumentController;
 use App\Http\Controllers\Api\PropertyPhotoController;
 use App\Http\Controllers\Api\PropertyEquipmentController;
+use App\Http\Controllers\Api\PropertyInvoiceController;
 use App\Http\Controllers\Api\ManagementContractController;
 use App\Http\Controllers\Api\ManagementContractDocumentController;
 use App\Http\Controllers\Api\ProposalController;
@@ -90,6 +92,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Cancellation resources (Management section)
     Route::apiResource('cancellations', CancellationController::class);
+
+    // Invoice resources (Management section - all invoices)
+    Route::apiResource('invoices', InvoiceController::class);
+    Route::get('invoices/{invoice}/view', [InvoiceController::class, 'viewFile']);
+    Route::get('invoices/{invoice}/download', [InvoiceController::class, 'downloadFile']);
 
     // Equipment (predefined list for room equipment)
     Route::get('equipment', [EquipmentController::class, 'index']);
@@ -185,8 +192,14 @@ Route::middleware('auth:sanctum')->group(function () {
         // Penalty routes
         Route::get('/penalties', [PropertyController::class, 'penalties']);
 
-        // Invoice routes
-        Route::get('/invoices', [PropertyController::class, 'invoices']);
+        // Invoice routes (CRUD)
+        Route::get('/invoices', [PropertyInvoiceController::class, 'index']);
+        Route::post('/invoices', [PropertyInvoiceController::class, 'store']);
+        Route::get('/invoices/{invoice}', [PropertyInvoiceController::class, 'show']);
+        Route::put('/invoices/{invoice}', [PropertyInvoiceController::class, 'update']);
+        Route::delete('/invoices/{invoice}', [PropertyInvoiceController::class, 'destroy']);
+        Route::get('/invoices/{invoice}/view', [PropertyInvoiceController::class, 'view']);
+        Route::get('/invoices/{invoice}/download', [PropertyInvoiceController::class, 'download']);
 
         // Management Contract routes
         Route::get('/management-contracts', [PropertyController::class, 'managementContracts']);

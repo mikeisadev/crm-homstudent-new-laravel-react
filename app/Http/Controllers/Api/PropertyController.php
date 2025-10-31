@@ -213,7 +213,7 @@ class PropertyController extends Controller
     {
         try {
             $invoices = $property->invoices()
-                ->orderBy('date', 'desc')
+                ->orderBy('issue_date', 'desc')
                 ->get();
 
             return $this->success($invoices, 'Bollette recuperate con successo');

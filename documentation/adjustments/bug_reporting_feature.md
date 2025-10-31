@@ -1,0 +1,22 @@
+- I need a small floating bug icon on the bottom right of the screen
+- Deeply analyze the frontend code of this project to properly add this floating button (maybe on the default layout when being inside the crm web app)
+- When I click on the bug button a modal opens:
+    - title: "Hai trovato un bug? Puoi segnarlarlo da qui"
+    - description: "Segnala il bug tramite questo popup. Puoi descrivere il problema che hai riscontrato nell'area di testo qui sotto. Lo sviluppatore di questo progetto vedrà il tuo bug report."
+    - field: "Descrivici il problema" (textarea field) to let the user describe the encountered problem
+    - button to send the reported bug: "Invia report"
+- Saving the bug report:
+    - create a database table called "bug_reporting"
+    - for this database table we'll use Laravel migration
+    - we will have those database column (or other fundamentals you'll retain to have):
+        - id
+        - report_date (current timestamp date time)
+        - bug_description (the value of the textarea when reporting a bug)
+        - the date of creation
+- create an API with sanctum that requires autentication
+- you already have an api instance of axios to manage everything
+- re-read and analyze the current codebase if needed for you to understand everything
+- act like a senior software engineer
+- write secure, production ready, modular, clean and scalable code.
+- the modal should have a background overlay and a close button.
+- in the modal add a small text, maybe below the textarea, with this string "Data di segnalazione: [current_date]"

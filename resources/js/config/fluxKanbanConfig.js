@@ -76,7 +76,7 @@ export const managementContractsConfig = {
     // Card display configuration
     card: {
         // Function to get card title
-        getTitle: (item) => `Contratto n.${item.contract_number || item.id}`,
+        getTitle: (item) => `${item.contract_number || item.id}`,
 
         // Fields to display in card
         fields: [
