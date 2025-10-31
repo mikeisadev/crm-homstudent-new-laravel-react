@@ -4,57 +4,46 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Deposit extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'contract_id',
+        'depositable_type',
+        'depositable_id',
         'client_id',
-        'property_type',
-        'property_id',
-        'room_id',
+        'contract_id',
         'amount',
-        'payment_receipt',
-        'refund_date',
-        'refund_amount',
-        'refund_notes',
+        'payment_document_file',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
-        'refund_date' => 'date',
-        'refund_amount' => 'decimal:2',
     ];
 
-    // Relationships
-    public function contract()
+    /**
+     * Polymorphic relationship (Room or Property)
+     */
+    public function depositable()
     {
-        return $this->belongsTo(Contract::class);
+        return $this->morphTo();
     }
 
+    /**
+     * Client relationship
+     */
     public function client()
     {
         return $this->belongsTo(Client::class);
     }
 
-    public function property()
+    /**
+     * Contract relationship (optional, for future use)
+     */
+    public function contract()
     {
-        return $this->belongsTo(Property::class);
-    }
-
-    public function room()
-    {
-        return $this->belongsTo(Room::class);
-    }
-
-    // Helper method to get the referenced property or room
-    public function getReferencedProperty()
-    {
-        if ($this->property_type === 'property') {
-            return $this->property;
-        }
-        return $this->room;
+        return $this->belongsTo(Contract::class);
     }
 }

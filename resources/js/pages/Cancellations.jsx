@@ -1,12 +1,12 @@
-import React from 'react';
+import ListingPage from '../components/listing/ListingPage';
+import { cancellationsConfig } from '../config/cancellationsListingConfig';
 
+/**
+ * Cancellations (Disdette) Page
+ *
+ * Management section page for cancellations
+ * Uses the reusable ListingPage component with cancellations configuration
+ */
 export default function Cancellations() {
-    return (
-        <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">Disdette</h1>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-                <p className="text-gray-600">Modulo Disdette - In costruzione</p>
-            </div>
-        </div>
-    );
+    return <ListingPage config={cancellationsConfig} />;
 }

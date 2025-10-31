@@ -3,7 +3,9 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useOnboarding } from '../hooks/useOnboarding';
 import Sidebar from './Sidebar';
+import Onboarding from './onboarding/Onboarding';
 
 export default function Layout() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -12,6 +14,7 @@ export default function Layout() {
     const { t } = useTranslation();
     const { user, logout } = useAuth();
     const toast = useToast();
+    const { isOnboardingCompleted, completeOnboarding } = useOnboarding();
 
     /**
      * Toggles.
@@ -99,6 +102,11 @@ export default function Layout() {
                     <Outlet />
                 </main>
             </div>
+
+            {/* Onboarding Flow - Shows only if not completed */}
+            {!isOnboardingCompleted && (
+                <Onboarding onComplete={completeOnboarding} />
+            )}
         </div>
     );
 }

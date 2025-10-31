@@ -1,0 +1,19 @@
+# Development overview
+- Focus on developing clean, modular, maintainable, secure and not redundant code like a SENIOR SOFTWARE ENGINEER
+- Use proper data structure and React components properly to do the job
+- Reanalyze the entire frontend codebase if needed.
+- After logging in inside the CRM I need a full screen div where I have loading bar with fake message statuses saying those messages:
+    - "Caricamento in corso dei dati del CRM"
+    - "Caricamento degli eventi del calendario"
+    - "Caricamento delle anagrafiche con condomini, immobili, stanze e clienti"
+    - "Caricamento del flusso dei contratti"
+    - "Caricamento dei proprietari e dei fornitori"
+    - "Caricamento dei dati di gestione: caparre, disdette, bollette e sanzioni"
+- This process must run for a maximum of 4.5 seconds
+- Inside this Div I needn a loading bar that goes step by step along a status message, status message I've listed in the beginning of this file.
+- After the loading process I need to show a multistep modal with a title, description and go back and next buttons. The modal will have a overlay background and inside the modal we'll have those slides:
+    - 1) Title: "CRM HomStudent è stato migrato a un nuovo stack tecnologico", Description: "CRM Homstudent è stato ridisegnato e risviluppato su PHP 8.4 con Laravel 11. Il suo database è stato riscritto e ristrutturato usando le "migrations" di Laravel e tutte le relazioni tra entità sono state ridefinite. Ad esempio i clienti hanno correlazioni dirette sui propri contratti, proposte o documenti. Lo stesso vale per tutte le altre entità presenti: stanze, immobili, condomini eccetera."
+    - 2) Title: "Nuova architettura e maggiore sicurezza", Description: "Il CRM è stato rifatto in Laravel seguendo l'architettura MVC per le web app. Sono state seguite tutte le best practices possibili per garantire maggiore sicurezza, scalabilità, manutenibilità del codice e modularità. Questo consente di rendere questo software sostenibile e mantenibile nel lungo termine."
+    - 3) Title "Frontend migrato a React e Tailwind": Description: "Il vecchio frontend del CRM HomStudent è stato ridefinito come una moderna SPA (Single Page Application) o Web App. Questo è stato fatto utilizzando React, React Routing, React Query e Tailwind. Inoltre la user interface e il layout sono stati rinfrescati per quanto possibile e recuperabile rispetto al vecchio progetto"
+- Then after the completing this oboarding modal we'll have an overlay background with a welcome screen: "Benvenuto su CRM Homstudent remastered", below this title I need a small text that resumes the tech stack used: PHP 8.4, Laravel 11, last version of MariaDB, React, React query, React router, Tailwind, Sanctum API di Laravel per l'interscambio dati CRUD"
+- Obviously this onboarding step has not to be done each time. I need a sort of localStorage o cookie value to avoid doing this everytime

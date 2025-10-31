@@ -80,7 +80,7 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
             <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
                 {/* Header */}
                 <div className="text-center mb-8">
@@ -147,6 +147,11 @@ export default function Login() {
                 <div className="mt-6 text-center text-sm text-gray-600">
                     <p>Accesso riservato al personale autorizzato</p>
                 </div>
+            </div>
+
+            <div className="p4 mt-[50px]">
+                <img src="https://michelemincone.com/wp-content/uploads/2025/10/michelemincone_new_logo_alphachannel.png" alt="Michele Mincone Logo" className="h-6 mx-auto mb-2" style={{height: 40}} />
+                <p className='mt-4 w-full text-center'>Software CRM realizzato da <b className="font-bold">Michele Mincone</b>.<br/>Stack software: <em>PHP 8.4</em>, <em>Laravel 11</em>, <em>React 18</em>, <em>Tailwind CSS 3</em>, <em>MariaDB 10.6</em></p>
             </div>
         </div>
     );

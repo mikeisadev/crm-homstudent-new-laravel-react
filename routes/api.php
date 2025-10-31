@@ -2,15 +2,18 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CalendarController;
+use App\Http\Controllers\Api\CancellationController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\CondominiumController;
 use App\Http\Controllers\Api\CondominiumDocumentController;
 use App\Http\Controllers\Api\CondominiumPhotoController;
 use App\Http\Controllers\Api\ContractController;
 use App\Http\Controllers\Api\DocumentController;
+use App\Http\Controllers\Api\DepositController;
 use App\Http\Controllers\Api\EquipmentController;
 use App\Http\Controllers\Api\FolderController;
 use App\Http\Controllers\Api\OwnerController;
+use App\Http\Controllers\Api\PenaltyController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\PropertyDocumentController;
 use App\Http\Controllers\Api\PropertyPhotoController;
@@ -74,6 +77,19 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Supplier resources
     Route::apiResource('suppliers', SupplierController::class);
+
+    // Penalty resources (Management section)
+    Route::apiResource('penalties', PenaltyController::class);
+    Route::get('penalties/{penalty}/view/{fileType}', [PenaltyController::class, 'viewFile']);
+    Route::get('penalties/{penalty}/download/{fileType}', [PenaltyController::class, 'downloadFile']);
+
+    // Deposit resources (Management section)
+    Route::apiResource('deposits', DepositController::class);
+    Route::get('deposits/{deposit}/view/payment', [DepositController::class, 'viewFile']);
+    Route::get('deposits/{deposit}/download/payment', [DepositController::class, 'downloadFile']);
+
+    // Cancellation resources (Management section)
+    Route::apiResource('cancellations', CancellationController::class);
 
     // Equipment (predefined list for room equipment)
     Route::get('equipment', [EquipmentController::class, 'index']);

@@ -34,12 +34,17 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
 
     /**
      * Load dynamic options for fields that require API data
+     * SKIP controlled fields - they will be loaded by their control field
      */
     useEffect(() => {
         const loadDynamicOptions = async () => {
             if (!isOpen || !config.formFields) return;
 
-            const fieldsWithLoadFrom = config.formFields.filter(field => field.loadFrom);
+            // Filter fields that have loadFrom BUT are NOT controlled by another field
+            const fieldsWithLoadFrom = config.formFields.filter(field =>
+                field.loadFrom && !field.controlledBy
+            );
+
             if (fieldsWithLoadFrom.length === 0) return;
 
             setLoadingOptions(true);
@@ -59,7 +64,7 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
 
                         // Extract the actual array based on endpoint
                         // E.g., /properties returns data.properties, /clients returns data.clients
-                        const dataKey = field.loadFrom.split('/').pop(); // 'properties', 'clients', etc.
+                        const dataKey = field.loadFrom.split('/').pop().split('?')[0]; // 'properties', 'clients', etc.
                         const items = data[dataKey] || [];
 
                         // Transform to react-select format
@@ -95,7 +100,9 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
      * Initialize form data when modal opens or item changes
      */
     useEffect(() => {
-        if (isOpen) {
+        const initializeForm = async () => {
+            if (!isOpen) return;
+
             if (item) {
                 // Edit mode - populate with item data
                 const initialData = {};
@@ -126,6 +133,15 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
                     initialData[field.key] = value !== undefined && value !== null ? value : (field.isMulti ? [] : '');
                 });
                 setFormData(initialData);
+
+                // Load controlled field options based on initial control field values
+                const controlledFields = config.formFields?.filter(f =>
+                    f.controlledBy && initialData[f.controlledBy]
+                ) || [];
+
+                for (const field of controlledFields) {
+                    await loadFieldOptions(field, initialData[field.controlledBy]);
+                }
             } else {
                 // Create mode - initialize with empty values or defaults
                 const initialData = {};
@@ -139,16 +155,90 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
                     initialData[field.key] = defaultVal !== undefined ? defaultVal : (field.isMulti ? [] : '');
                 });
                 setFormData(initialData);
+
+                // Load controlled field options based on default control field values
+                const controlledFields = config.formFields?.filter(f =>
+                    f.controlledBy && initialData[f.controlledBy]
+                ) || [];
+
+                for (const field of controlledFields) {
+                    await loadFieldOptions(field, initialData[field.controlledBy]);
+                }
             }
             setErrors({});
             setUploadedFiles({});
-        }
+        };
+
+        initializeForm();
     }, [isOpen, item, config.formFields]);
+
+    /**
+     * Load options for a specific field dynamically
+     */
+    const loadFieldOptions = async (field, controlValue = null) => {
+        if (!field.loadFrom) return;
+
+        console.log(`[RegistryFormModal] Loading options for field: ${field.key}, controlValue: ${controlValue}`);
+
+        try {
+            // Determine endpoint based on control field value
+            let endpoint = field.loadFrom;
+
+            // If field is conditionally loaded based on another field
+            if (field.conditionalLoad && controlValue) {
+                const conditional = field.conditionalLoad[controlValue];
+                if (conditional && conditional.endpoint) {
+                    endpoint = conditional.endpoint;
+                    console.log(`[RegistryFormModal] Using conditional endpoint for ${field.key}: ${endpoint}`);
+                }
+            }
+
+            const url = endpoint.includes('?')
+                ? `${endpoint}&per_page=9999`
+                : `${endpoint}?per_page=9999`;
+
+            console.log(`[RegistryFormModal] Fetching from URL: ${url}`);
+            const response = await api.get(url);
+            const data = response.data.data;
+
+            // Extract the actual array based on endpoint
+            const dataKey = endpoint.split('/').pop().split('?')[0];
+            const items = data[dataKey] || [];
+            console.log(`[RegistryFormModal] Loaded ${items.length} items for ${field.key}`);
+
+            // Transform to react-select format
+            let optionLabel = field.optionLabel;
+            if (field.conditionalLoad && controlValue && field.conditionalLoad[controlValue]) {
+                optionLabel = field.conditionalLoad[controlValue].optionLabel || optionLabel;
+            }
+
+            const options = items.map(item => ({
+                value: item.id,
+                label: optionLabel
+                    ? (typeof optionLabel === 'function'
+                        ? optionLabel(item)
+                        : item[optionLabel])
+                    : item.name || item.code || item.internal_code || `Item ${item.id}`
+            }));
+
+            console.log(`[RegistryFormModal] Setting ${options.length} options for ${field.key}`);
+            setDynamicOptions(prev => ({
+                ...prev,
+                [field.key]: options
+            }));
+        } catch (error) {
+            console.error(`[RegistryFormModal] Error loading options for ${field.key}:`, error);
+            setDynamicOptions(prev => ({
+                ...prev,
+                [field.key]: []
+            }));
+        }
+    };
 
     /**
      * Handle input change
      */
-    const handleChange = (fieldKey, value) => {
+    const handleChange = async (fieldKey, value) => {
         setFormData(prev => ({
             ...prev,
             [fieldKey]: value
@@ -160,6 +250,21 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
                 ...prev,
                 [fieldKey]: null
             }));
+        }
+
+        // Check if this field controls other fields
+        const controlledFields = config.formFields?.filter(f => f.controlledBy === fieldKey) || [];
+
+        // Reload options for controlled fields
+        for (const controlledField of controlledFields) {
+            // Clear the value of the controlled field when control changes
+            setFormData(prev => ({
+                ...prev,
+                [controlledField.key]: ''
+            }));
+
+            // Reload options based on new control value
+            await loadFieldOptions(controlledField, value);
         }
     };
 
@@ -220,6 +325,42 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
     };
 
     /**
+     * Handle viewing a file field (for listing pages like penalties)
+     * Uses blob URL for secure authenticated viewing
+     */
+    const handleViewFileField = async (fieldKey, fileType) => {
+        try {
+            // Make authenticated request for the file
+            const response = await api.get(
+                `${config.apiEndpoint}/${item.id}/view/${fileType}`,
+                {
+                    responseType: 'blob' // Important: get response as blob
+                }
+            );
+
+            // Create blob URL from response
+            const blob = new Blob([response.data], {
+                type: response.headers['content-type'] || 'application/pdf'
+            });
+            const blobUrl = URL.createObjectURL(blob);
+
+            // Open in new tab
+            const newWindow = window.open(blobUrl, '_blank');
+
+            // Clean up blob URL after window loads (or after 1 minute as fallback)
+            if (newWindow) {
+                newWindow.onload = () => {
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+                };
+            }
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+        } catch (error) {
+            console.error('Error viewing file:', error);
+            alert('Errore durante la visualizzazione del file');
+        }
+    };
+
+    /**
      * Render a form field based on configuration
      */
     const renderField = (field) => {
@@ -238,10 +379,19 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
             fieldOptions = fieldOptions.filter(opt => opt.value !== excludedId);
         }
 
+        // Determine field label - support conditional labels based on control field
+        let fieldLabel = field.label;
+        if (field.conditionalLabel && field.controlledBy) {
+            const controlValue = formData[field.controlledBy];
+            if (controlValue && field.conditionalLabel[controlValue]) {
+                fieldLabel = field.conditionalLabel[controlValue];
+            }
+        }
+
         return (
             <div key={field.key} className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {field.label}
+                    {fieldLabel}
                     {field.required && <span className="text-red-500 ml-1">*</span>}
                 </label>
 
@@ -322,7 +472,7 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
                                 </span>
                             )}
                         </div>
-                        {/* Show existing PDF link in edit mode */}
+                        {/* Show existing file link in edit mode (for registry pages with documents) */}
                         {isEdit && item && item.documents && item.documents.length > 0 && (
                             <div className="mt-2 flex items-center gap-3">
                                 <button
@@ -335,6 +485,25 @@ export default function RegistryFormModal({ config, isOpen, onClose, onSave, ite
                                 </button>
                                 <span className="text-xs text-gray-500">
                                     ({item.documents[0].name || 'PDF'})
+                                </span>
+                            </div>
+                        )}
+                        {/* Show existing file link in edit mode (for listing pages with direct file fields) */}
+                        {isEdit && item && item[field.key] && field.fileType && (
+                            <div className="mt-2 flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => handleViewFileField(field.key, field.fileType)}
+                                    className="text-blue-600 hover:text-blue-800 text-sm underline font-medium flex items-center gap-1"
+                                    disabled={saving}
+                                >
+                                    <i className="material-icons text-base">
+                                        {field.fileType === 'invoice' ? 'description' : 'receipt'}
+                                    </i>
+                                    Visualizza file esistente
+                                </button>
+                                <span className="text-xs text-gray-500">
+                                    ({item[field.key].split('/').pop() || 'File PDF'})
                                 </span>
                             </div>
                         )}

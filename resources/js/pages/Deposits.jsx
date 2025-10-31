@@ -1,12 +1,12 @@
-import React from 'react';
+import ListingPage from '../components/listing/ListingPage';
+import { depositsConfig } from '../config/depositsListingConfig';
 
+/**
+ * Deposits (Caparre) Page
+ *
+ * Management section page for deposits
+ * Uses the reusable ListingPage component with deposits configuration
+ */
 export default function Deposits() {
-    return (
-        <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">Caparre</h1>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-                <p className="text-gray-600">Modulo Caparre - In costruzione</p>
-            </div>
-        </div>
-    );
+    return <ListingPage config={depositsConfig} />;
 }

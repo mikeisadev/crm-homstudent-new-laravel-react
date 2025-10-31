@@ -1,12 +1,10 @@
-import React from 'react';
+import ListingPage from '../components/listing/ListingPage';
+import { penaltiesConfig } from '../config/penaltiesListingConfig';
 
+/**
+ * Penalties (Sanzioni) Page
+ * Manages penalties using the listing architecture
+ */
 export default function Penalties() {
-    return (
-        <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">Sanzioni</h1>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-                <p className="text-gray-600">Modulo Sanzioni - In costruzione</p>
-            </div>
-        </div>
-    );
+    return <ListingPage config={penaltiesConfig} />;
 }
