@@ -1,9 +1,7 @@
 import { useEffect } from 'react';
 import MMBrand from '../MMBrand';
 
-export default function WelcomeScreen({ onComplete }) {
-    alert("Benvenuto su CRM Homstudent remastered! Il tuo sistema di gestione è stato completamente rinnovato con un nuovo stack tecnologico moderno e performante.");
-    
+export default function WelcomeScreen({ onComplete }) {    
     //const AUTO_CLOSE_DURATION = 5000;
 
     // useEffect(() => {
