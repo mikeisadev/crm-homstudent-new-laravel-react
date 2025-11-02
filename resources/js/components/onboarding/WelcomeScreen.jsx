@@ -1,22 +1,18 @@
 import { useEffect } from 'react';
 import MMBrand from '../MMBrand';
 
-/**
- * WelcomeScreen Component
- *
- * Final welcome overlay showing tech stack used
- * Auto-closes after 5 seconds or manual click
- */
 export default function WelcomeScreen({ onComplete }) {
-    const AUTO_CLOSE_DURATION = 5000; // 5 seconds
+    alert("Benvenuto su CRM Homstudent remastered! Il tuo sistema di gestione è stato completamente rinnovato con un nuovo stack tecnologico moderno e performante.");
+    
+    //const AUTO_CLOSE_DURATION = 5000;
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            onComplete();
-        }, AUTO_CLOSE_DURATION);
+    // useEffect(() => {
+    //     const timer = setTimeout(() => {
+    //         onComplete();
+    //     }, AUTO_CLOSE_DURATION);
 
-        return () => clearTimeout(timer);
-    }, [onComplete]);
+    //     return () => clearTimeout(timer);
+    // }, [onComplete]);
 
     // Tech stack items as per requirements
     const techStack = [
@@ -77,7 +73,7 @@ export default function WelcomeScreen({ onComplete }) {
                 {/* Close hint */}
                 <div className="mt-8">
                     <p className="text-gray-400 text-sm">
-                        Clicca ovunque per iniziare o attendi 5 secondi
+                        Clicca ovunque per iniziare
                     </p>
                 </div>
             </div>

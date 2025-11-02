@@ -18,7 +18,7 @@ const MMBrand = ({textWhite = false, showTech = true}) => {
     if (textWhite) {
         return (
             <div className="p4 mt-[50px]">
-                <div className="bg-white p-4 rounded-lg shadow-md">
+                <div className="bg-white p-4 rounded-lg">
                     <Logo />
                     {showTech && <TechStack />}
                 </div>
